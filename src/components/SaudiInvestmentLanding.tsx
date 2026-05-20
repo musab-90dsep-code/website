@@ -1,5 +1,5 @@
 import { useState, FormEvent, ReactNode } from "react";
-import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sparkles, Building2 } from "lucide-react";
+import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sparkles, Building2, Mail, MapPin } from "lucide-react";
 
 export default function SaudiInvestmentLanding({
   onCallForVisit,
@@ -91,28 +91,20 @@ export default function SaudiInvestmentLanding({
           </p>
 
           <div className="pt-4 flex justify-center">
-            <button
-              onClick={onCallForVisit}
-              className="bg-rose-500 hover:bg-rose-600 text-white font-display text-xs font-bold py-3.5 px-8 rounded-full shadow-lg shadow-rose-500/30 transition-all hover:scale-105 inline-flex items-center gap-2"
+            <a
+              href="#contact"
+              className="bg-rose-500 hover:bg-rose-600 text-white font-display text-xs font-bold py-3.5 px-8 rounded-full shadow-lg shadow-rose-500/30 transition-all hover:scale-105 inline-flex items-center gap-2 no-underline cursor-pointer"
             >
               <PhoneCall className="h-4 w-4" />
               Call for Visit
-            </button>
+            </a>
           </div>
         </div>
       </section>
 
       {children}
 
-      {/* 3. SUB-HERO PARAGRAPHS (Retained exactly with refined styles) */}
-      <section id="about" className="py-16 bg-white px-4 md:px-12 text-center max-w-4xl mx-auto text-slate-700 space-y-5">
-        <p className="text-sm md:text-base font-semibold text-slate-800 leading-relaxed font-sans">
-          At <span className="font-bold text-rose-500">Saudi Investment</span>, we take pride in offering reliable and affordable air-conditioning and interior solutions for both residential and commercial clients across Saudi Arabia.
-        </p>
-        <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-sans max-w-3xl mx-auto">
-          With years of experience, our certified technicians are trained to handle all brands and models — ensuring your aircon runs efficiently and your interiors stay trouble-free. Whether it's a quick service, a gas top-up, or a full aircon installation, we guarantee professionalism, transparency, and customer satisfaction every step of the way.
-        </p>
-      </section>
+
 
       {/* 4. WHY CHOOSE US (Grounded in Vibrant Palette 4-accent layout: rose, orange, teal, indigo) */}
       <section className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
@@ -185,67 +177,50 @@ export default function SaudiInvestmentLanding({
           </div>
         </div>
       </section>
+      {/* 5. CONTACT SECTION */}
+      <section id="contact" className="py-16 bg-white px-4 md:px-12">
+        <div className="max-w-4xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-10 text-center">
+          <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase mb-2">Live Query Desk</h2>
+          <p className="text-sm text-slate-500 mb-8 max-w-lg mx-auto">
+            Get in touch with our experts. We're ready to answer your questions and provide personalized consultation.
+          </p>
 
-      {/* 5. SEGMENT BLOCK BOX (Experiencing Quality Air Conditioning...) */}
-      <section className="py-16 bg-white px-4 md:px-12">
-        <div className="max-w-4xl mx-auto bg-slate-100 border border-slate-200 rounded-3xl p-6 md:p-10 flex flex-col lg:flex-row gap-8 items-center">
-          {/* Left info column */}
-          <div className="lg:w-1/2 space-y-4 text-left">
-            <h3 className="text-2xl font-bold font-display text-slate-900 tracking-tight leading-snug uppercase">
-              Experience Quality Air Conditioning And Interior Service In Singapore & Saudi Arabia
-            </h3>
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-sans">
-              We bring comfort, cleanliness, and cool air to every home — delivering reliable aircon and interior services you can trust.
-            </p>
-            <button
-              onClick={() => onNavigateToHubSection?.("Services")}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-display text-xs font-bold uppercase py-3 px-8 rounded-full shadow-lg shadow-indigo-600/20 transition-all hover:scale-102"
-            >
-              LEARN MORE
-            </button>
-          </div>
-
-          {/* Right illustration */}
-          <div className="lg:w-1/2 w-full flex flex-col gap-4">
-            <div className="w-full h-48 rounded-2xl overflow-hidden shadow-sm border border-slate-200">
-              <img
-                src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80"
-                alt="HVAC certified tech"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
+          <div className="flex flex-col md:flex-row gap-8 justify-center max-w-2xl mx-auto text-left">
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <PhoneCall className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hotline</div>
+                  <div className="font-bold text-slate-800">+966 50 111 2222</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Support</div>
+                  <div className="font-bold text-slate-800">info@saudiinvestment.com</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Headquarters</div>
+                  <div className="font-bold text-slate-800">Riyadh, Saudi Arabia</div>
+                </div>
+              </div>
             </div>
 
-            {/* Double sub-cards (Rose & Indigo highlights) */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => onNavigateToHubSection?.("Services")}
-                className="bg-white p-4 rounded-2xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50/30 text-left transition-all hover:shadow-xs group"
-              >
-                <div className="h-8 w-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center mb-2">
-                  <Snowflake className="h-4 w-4 text-rose-500 animate-spin-slow" />
-                </div>
-                <h5 className="font-bold text-xs text-slate-900 font-display group-hover:text-rose-600">
-                  Professional Aircon
-                </h5>
-                <p className="text-[10px] text-slate-500 leading-snug mt-1">
-                  Expert air conditioning repairs & installation.
-                </p>
-              </button>
-
-              <button
-                onClick={() => onNavigateToHubSection?.("Services")}
-                className="bg-white p-4 rounded-2xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/30 text-left transition-all hover:shadow-xs group"
-              >
-                <div className="h-8 w-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2">
-                  <PenTool className="h-4 w-4 text-indigo-500" />
-                </div>
-                <h5 className="font-bold text-xs text-slate-900 font-display group-hover:text-indigo-600">
-                  Interior Design
-                </h5>
-                <p className="text-[10px] text-slate-500 leading-snug mt-1">
-                  Complete Spatial Design and material sourcing.
-                </p>
+            <div className="flex-1 space-y-3">
+              <input type="text" placeholder="Your Name" className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" />
+              <input type="tel" placeholder="Phone Number" className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" />
+              <button className="w-full bg-rose-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-rose-600 transition-colors">
+                Request Callback
               </button>
             </div>
           </div>

@@ -145,20 +145,18 @@ export default function App() {
             </div>
 
             {/* Centered Pink/Rose "Consult" Interactive Circle matching Mockup center placement */}
+            {/* Centered Image Consult Button */}
             <div id="quick-consult-trigger" className="pt-12 flex flex-col items-center">
-              <div className="relative group">
-                <button
-                  onClick={() => setShowConsultForm(true)}
-                  className="w-20 h-20 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 transition-all duration-300 flex items-center justify-center font-display font-black text-sm uppercase tracking-widest relative z-20 hover:scale-110 active:scale-95 cursor-pointer"
-                  aria-label="Toggle Live Consultation Module"
-                >
-                  consult
-                </button>
+              <a href="#contact" className="relative group flex flex-col items-center no-underline cursor-pointer">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-rose-500 shadow-md group-hover:scale-105 transition-all duration-300 relative z-20">
+                  <img src="/image.png" alt="Consultant" className="w-full h-full object-cover object-top" />
+                </div>
                 
-                {/* Outer soft aura pulsing effect */}
-                <span className="absolute -inset-2.5 rounded-full bg-rose-5050 bg-rose-500 animate-pulse opacity-25 group-hover:opacity-40 z-10 pointer-events-none" />
-              </div>
-              <span className="text-slate-500 text-[11px] font-mono mt-3 uppercase tracking-wider font-bold">
+                <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">
+                  CONSULT
+                </span>
+              </a>
+              <span className="text-slate-500 text-[11px] font-mono mt-1 uppercase tracking-wider font-bold">
                 Centrally Dispatch Live Query Desk
               </span>
             </div>
