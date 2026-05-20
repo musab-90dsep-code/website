@@ -1,0 +1,6 @@
+{
+  "name": "Saudi Investment Hub",
+  "description": "An interactive landing page and mechanical contracting hub including live services scheduling, promotional loyalty spinning wheels, Saudi cultural concert seating selectors, and client testimonial hotspots.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
