@@ -5,10 +5,12 @@ import SpinningHub from "./components/SpinningHub";
 import ConcertHub from "./components/ConcertHub";
 import HappyClientsHub from "./components/HappyClientsHub";
 import ServicesHub from "./components/ServicesHub";
+import EPassportPage from "./components/EPassportPage";
 import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle } from "lucide-react";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services" >("Spinning");
+  const [currentPage, setCurrentPage] = useState<"home" | "epassport">("home");
   const [showConsultForm, setShowConsultForm] = useState(false);
   const [consultName, setConsultName] = useState("");
   const [consultDetail, setConsultDetail] = useState("");
@@ -58,112 +60,114 @@ export default function App() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <div className="font-bold text-xs uppercase tracking-widest font-mono text-rose-400">
-                Reward Coupon Generated!
-              </div>
-              <p className="text-xs text-slate-200">
-                You won <span className="text-rose-300 font-bold">{notification}</span>. Apply this promo reference code during checkout for direct sponsorship!
+              <div className="font-bold text-sm tracking-wide text-white uppercase">Congratulations!</div>
+              <p className="text-rose-200 text-xs font-medium leading-relaxed">
+                You won a <span className="font-bold text-white bg-rose-500/30 px-1.5 py-0.5 rounded">{notification}</span>! Show this screen to our staff to claim your reward.
               </p>
-              <div className="text-[10px] font-mono bg-white/10 px-2.5 py-1 rounded text-white inline-block font-bold">
-                SPONSOR-COUPON-X2026
-              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* SECTION 1: SAUDI INVESTMENT PRIMARY LANDING PAGE AND INTEGRATED HOOK */}
-      <SaudiInvestmentLanding
-        onCallForVisit={() => {
-          scrollToHub("Services");
-        }}
-        onNavigateToHubSection={(tab) => {
-          scrollToHub(tab);
-        }}
-      >
-        {/* SECTION 2: INTERACTIVE CUSTOMER ENGAGEMENT HUB */}
-        <section
-          ref={hubSectionRef}
-          id="category-hub"
-          className="py-20 px-4 md:px-12 bg-white border-t border-b border-slate-200"
-        >
-          <div className="max-w-5xl mx-auto space-y-12">
-            
-
-
-            {/* Dynamic Pivot of Active Visual Interface with Framer Motion */}
-            <div className="relative">
-              <AnimatePresence mode="wait">
-                {activeTab === "Spinning" && (
-                  <motion.div
-                    key="spinning-segment"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SpinningHub onRewardWon={handleRewardWon} />
-                  </motion.div>
-                )}
-
-                {activeTab === "Concert" && (
-                  <motion.div
-                    key="concert-segment"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ConcertHub />
-                  </motion.div>
-                )}
-
-                {activeTab === "Happy clients" && (
-                  <motion.div
-                    key="clients-segment"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <HappyClientsHub />
-                  </motion.div>
-                )}
-
-                {activeTab === "Services" && (
-                  <motion.div
-                    key="services-segment"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ServicesHub />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Centered Pink/Rose "Consult" Interactive Circle matching Mockup center placement */}
-            {/* Centered Image Consult Button */}
-            <div id="quick-consult-trigger" className="pt-12 flex flex-col items-center">
-              <a href="#contact" className="relative group flex flex-col items-center no-underline cursor-pointer">
-                <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-rose-500 shadow-md group-hover:scale-105 transition-all duration-300 relative z-20">
-                  <img src="/image.png" alt="Consultant" className="w-full h-full object-cover object-top" />
-                </div>
+      {currentPage === "epassport" ? (
+        <EPassportPage onBack={() => setCurrentPage("home")} />
+      ) : (
+        <>
+          {/* SECTION 1: SAUDI INVESTMENT PRIMARY LANDING PAGE AND INTEGRATED HOOK */}
+          <SaudiInvestmentLanding
+            onCallForVisit={() => {
+              scrollToHub("Services");
+            }}
+            onNavigateToHubSection={(tab) => {
+              scrollToHub(tab);
+            }}
+            onNavigateToEPassport={() => setCurrentPage("epassport")}
+          >
+            {/* SECTION 2: INTERACTIVE CUSTOMER ENGAGEMENT HUB */}
+            <section
+              ref={hubSectionRef}
+              id="category-hub"
+              className="py-20 px-4 md:px-12 bg-white border-t border-b border-slate-200"
+            >
+              <div className="max-w-5xl mx-auto space-y-12">
                 
-                <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">
-                  BOOK NOW
-                </span>
-              </a>
-              <span className="text-slate-500 text-[11px] font-mono mt-1 uppercase tracking-wider font-bold">
-                Centrally Dispatch Live Query Desk
-              </span>
-            </div>
 
-          </div>
-        </section>
-      </SaudiInvestmentLanding>
+
+                {/* Dynamic Pivot of Active Visual Interface with Framer Motion */}
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    {activeTab === "Spinning" && (
+                      <motion.div
+                        key="spinning-segment"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <SpinningHub onRewardWon={handleRewardWon} />
+                      </motion.div>
+                    )}
+
+                    {activeTab === "Concert" && (
+                      <motion.div
+                        key="concert-segment"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ConcertHub />
+                      </motion.div>
+                    )}
+
+                    {activeTab === "Happy clients" && (
+                      <motion.div
+                        key="clients-segment"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <HappyClientsHub />
+                      </motion.div>
+                    )}
+
+                    {activeTab === "Services" && (
+                      <motion.div
+                        key="services-segment"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ServicesHub />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Centered Pink/Rose "Consult" Interactive Circle matching Mockup center placement */}
+                {/* Centered Image Consult Button */}
+                <div id="quick-consult-trigger" className="pt-12 flex flex-col items-center">
+                  <a href="#contact" className="relative group flex flex-col items-center no-underline cursor-pointer">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-rose-500 shadow-md group-hover:scale-105 transition-all duration-300 relative z-20">
+                      <img src="/image.png" alt="Consultant" className="w-full h-full object-cover object-top" />
+                    </div>
+                    
+                    <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">
+                      BOOK NOW
+                    </span>
+                  </a>
+                  <span className="text-slate-500 text-[11px] font-mono mt-1 uppercase tracking-wider font-bold">
+                    Centrally Dispatch Live Query Desk
+                  </span>
+                </div>
+
+              </div>
+            </section>
+          </SaudiInvestmentLanding>
+        </>
+      )}
 
       {/* Real-time Consult Messaging Drawer/Overlay */}
       <AnimatePresence>

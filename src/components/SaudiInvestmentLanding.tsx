@@ -4,10 +4,12 @@ import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sp
 export default function SaudiInvestmentLanding({
   onCallForVisit,
   onNavigateToHubSection,
+  onNavigateToEPassport,
   children,
 }: {
   onCallForVisit?: () => void;
   onNavigateToHubSection?: (tab: string) => void;
+  onNavigateToEPassport?: () => void;
   children?: ReactNode;
 }) {
   const [quoteRequestStatus, setQuoteRequestStatus] = useState<"none" | "submitting" | "done">("none");
@@ -166,7 +168,10 @@ export default function SaudiInvestmentLanding({
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1 - Rose theme */}
-            <div className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50/40 transition-all shadow-xs flex flex-col justify-between">
+            <div 
+              onClick={onNavigateToEPassport}
+              className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50/40 transition-all shadow-xs flex flex-col justify-between cursor-pointer"
+            >
               <div className="space-y-4">
                 <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600">
                   <FileText className="h-5 w-5" />
