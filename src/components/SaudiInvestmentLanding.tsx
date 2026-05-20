@@ -1,15 +1,17 @@
-import { useState, FormEvent, ReactNode } from "react";
+import { useState, useEffect, FormEvent, ReactNode } from "react";
 import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sparkles, Building2, Mail, MapPin, FileText, Plane, Star, Quote } from "lucide-react";
 
 export default function SaudiInvestmentLanding({
   onCallForVisit,
   onNavigateToHubSection,
   onNavigateToEPassport,
+  onNavigateToVisa,
   children,
 }: {
   onCallForVisit?: () => void;
   onNavigateToHubSection?: (tab: string) => void;
   onNavigateToEPassport?: () => void;
+  onNavigateToVisa?: () => void;
   children?: ReactNode;
 }) {
   const [quoteRequestStatus, setQuoteRequestStatus] = useState<"none" | "submitting" | "done">("none");
@@ -17,6 +19,13 @@ export default function SaudiInvestmentLanding({
   const [quoteName, setQuoteName] = useState("");
   const [quotePhone, setQuotePhone] = useState("");
   const [quoteSelection, setQuoteSelection] = useState("Aircon Servicing");
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const triggerQuote = (e: FormEvent) => {
     e.preventDefault();
@@ -28,30 +37,49 @@ export default function SaudiInvestmentLanding({
 
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen">
-      {/* 1. TOP BRANDING NAVIGATION (Vibrant Palette Theme styling) */}
-      <nav id="top-navigation" className="h-[64px] bg-slate-900/90 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+      {/* 1. TOP BRANDING NAVIGATION */}
+      <nav
+        id="top-navigation"
+        className={`h-[68px] px-4 md:px-12 flex items-center justify-between fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          scrolled
+            ? "bg-slate-900/95 backdrop-blur-lg border-b border-white/10 shadow-lg"
+            : "bg-transparent border-b border-white/5"
+        }`}
+      >
+        {/* Logo & Brand */}
         <div className="flex items-center gap-3">
-          {/* Encore-inspired vibrant visual badge */}
-          <div className="w-8 h-8 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-rose-500/30 italic text-xl">S</div>
-          <span className="font-display font-black text-sm md:text-base tracking-tight text-white">
-            SAUDI INVESTMENT
-          </span>
+          <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">S</div>
+          <div className="flex flex-col leading-none">
+            <span className="font-display font-black text-sm tracking-tight text-white">SAUDI INVESTMENT</span>
+            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">Riyadh · Saudi Arabia</span>
+          </div>
         </div>
 
-        {/* Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <a href="#homepage" className="text-rose-400 border-b-2 border-rose-400 pb-0.5">Home</a>
-          <a href="#about" className="hover:text-white transition-colors">About</a>
-          <a href="#category-hub" className="hover:text-white transition-colors">Service</a>
-          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+        {/* Center Nav Pill */}
+        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+          {[
+            { label: "Home", href: "#homepage" },
+            { label: "Service", href: "#service" },
+            { label: "Why Us", href: "#why-choose-us" },
+            { label: "Contact", href: "#contact" },
+          ].map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 no-underline visited:text-white/90 active:text-white"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
 
-        {/* Right Action Quote Button */}
+        {/* Right CTA Button */}
         <button
           onClick={() => setShowQuoteModal(true)}
-          className="bg-rose-500 text-white px-5 py-2 rounded-full hover:bg-rose-600 transition-all font-display font-semibold text-xs shadow-lg shadow-rose-500/20 hover:scale-102"
+          className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-orange-500 text-white px-5 py-2.5 rounded-full hover:from-rose-600 hover:to-orange-600 transition-all font-bold text-xs shadow-lg shadow-rose-500/30 hover:scale-105 hover:shadow-rose-500/50 flex items-center gap-2"
         >
-          Get Quote
+          <span className="relative z-10">Get Quote</span>
+          <span className="relative z-10 text-rose-200">→</span>
         </button>
       </nav>
 
@@ -64,8 +92,10 @@ export default function SaudiInvestmentLanding({
             alt="Hero image"
             className="w-full h-full object-cover object-center"
           />
-          {/* Subtle dark gradient only at bottom so text stays readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+          {/* Top dark gradient to ensure transparent navbar elements are readable under all circumstances */}
+          <div className="absolute inset-x-0 top-0 h-[180px] bg-gradient-to-b from-slate-950/80 via-slate-950/30 to-transparent" />
+          {/* Bottom dark gradient so hero text stays highly readable */}
+          <div className="absolute inset-x-0 bottom-0 h-[350px] bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
         </div>
 
         {/* Vibrant Floating CSS Bar/Block charts */}
@@ -106,60 +136,25 @@ export default function SaudiInvestmentLanding({
 
       {children}
 
-      {/* 3.5 ABOUT US */}
-      <section id="about" className="py-20 bg-white px-4 md:px-12 relative overflow-hidden">
-        {/* Background Decorative element */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
-            {/* Text Content */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-[10px] uppercase tracking-widest">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>About Us</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900 font-display leading-tight uppercase tracking-tight">
-                Your Trusted Partner For <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Growth & Success</span>
-              </h2>
-              <p className="text-sm md:text-base text-slate-500 leading-relaxed font-medium">
-                We are a dedicated team of professionals committed to providing seamless and efficient services tailored to your needs. From E-Passport processing to Visa applications, our expertise ensures a hassle-free experience. 
-              </p>
-              <p className="text-sm md:text-base text-slate-500 leading-relaxed">
-                Our mission is to bridge the gap between complex procedures and your ultimate goals, delivering results with transparency, speed, and uncompromising quality.
-              </p>
-              <div className="pt-4 flex items-center gap-4">
-                <button className="px-6 py-3 bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg">
-                  Learn More
-                </button>
-                <div className="flex items-center gap-2 text-slate-600 font-semibold text-sm">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                    <UserCheck className="w-4 h-4" />
-                  </div>
-                  <span>10k+ Happy Clients</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Visual/Image Content */}
-            <div className="relative">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative shadow-2xl border border-slate-200/60 group">
-                <img src="/image.png" alt="About Us" className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
-              </div>
-              
-              {/* Floating Accent */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-5 rounded-2xl shadow-xl border border-slate-100 flex flex-col gap-1 hidden md:flex">
-                <div className="text-3xl font-black text-blue-600">100%</div>
-                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Satisfaction<br/>Guaranteed</div>
-              </div>
-            </div>
+      {/* 3.5 WHY CHOOSE US (Text Only) */}
+      <section id="why-choose-us" className="py-20 bg-white px-4 md:px-12">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 font-display leading-tight uppercase tracking-tight">
+            Why Choose Us
+          </h2>
+          <div className="space-y-6 text-slate-600 text-base md:text-lg leading-relaxed font-medium">
+            <p>
+              At Saudi Investment, we believe in delivering uncompromising quality, speed, and transparency. Our team of seasoned professionals is dedicated to simplifying complex procedures—from E-Passport processing to Visa applications—ensuring you achieve your goals without the usual hassle.
+            </p>
+            <p>
+              We pride ourselves on our deep industry knowledge and our commitment to putting clients first. Every application is handled with the utmost care, giving you peace of mind and guaranteeing a smooth, efficient experience from start to finish. Choose us for reliability, expertise, and a partner who truly cares about your success.
+            </p>
           </div>
         </div>
       </section>
 
       {/* 4. WHY CHOOSE US (Grounded in Vibrant Palette 4-accent layout: rose, orange, teal, indigo) */}
-      <section className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
+      <section id="service" className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase">Our Service</h2>
@@ -186,7 +181,10 @@ export default function SaudiInvestmentLanding({
             </div>
 
             {/* Card 2 - Orange theme */}
-            <div className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50/40 transition-all shadow-xs flex flex-col justify-between">
+            <div 
+              onClick={onNavigateToVisa}
+              className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50/40 transition-all shadow-xs flex flex-col justify-between cursor-pointer"
+            >
               <div className="space-y-4">
                 <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
                   <Plane className="h-5 w-5" />
@@ -251,68 +249,71 @@ export default function SaudiInvestmentLanding({
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="flex gap-1 text-amber-400 mb-6">
+            <div className="bg-slate-50 px-8 pb-8 pt-14 mt-10 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
+              {/* Top Center Avatar */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-indigo-100 flex items-center justify-center font-bold font-display text-2xl text-indigo-600">
+                AH
+              </div>
+              
+              <h4 className="text-base font-bold text-slate-900 mb-1 mt-2">Ahmed Hassan</h4>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">Saudi Arabia</p>
+
+              <div className="flex justify-center gap-1 text-amber-400 mb-6">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+              
+              <p className="text-sm text-slate-600 italic leading-relaxed">
                 "The E-Passport application process was incredibly smooth. They guided me through every step, and I received my passport much faster than expected. Highly recommended!"
               </p>
-              <div className="flex items-center gap-4 mt-auto">
-                <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold font-display">
-                  AH
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Ahmed Hassan</h4>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Business Traveler</p>
-                </div>
-              </div>
+              
               <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-indigo-100 transition-colors pointer-events-none" />
             </div>
 
             {/* Testimonial 2 */}
-            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="flex gap-1 text-amber-400 mb-6">
+            <div className="bg-slate-50 px-8 pb-8 pt-14 mt-10 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
+              {/* Top Center Avatar */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-rose-100 flex items-center justify-center font-bold font-display text-2xl text-rose-600">
+                SM
+              </div>
+              
+              <h4 className="text-base font-bold text-slate-900 mb-1 mt-2">Sarah Malik</h4>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">United Arab Emirates</p>
+
+              <div className="flex justify-center gap-1 text-amber-400 mb-6">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+              
+              <p className="text-sm text-slate-600 italic leading-relaxed">
                 "I needed a business visa urgently, and the team handled everything flawlessly. Professional, transparent pricing, and excellent communication throughout."
               </p>
-              <div className="flex items-center gap-4 mt-auto">
-                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center font-bold font-display">
-                  SM
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Sarah Malik</h4>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Corporate Executive</p>
-                </div>
-              </div>
+              
               <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-rose-100 transition-colors pointer-events-none" />
             </div>
 
             {/* Testimonial 3 */}
-            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="flex gap-1 text-amber-400 mb-6">
+            <div className="bg-slate-50 px-8 pb-8 pt-14 mt-10 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
+              {/* Top Center Avatar */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-teal-100 flex items-center justify-center font-bold font-display text-2xl text-teal-600">
+                RA
+              </div>
+              
+              <h4 className="text-base font-bold text-slate-900 mb-1 mt-2">Rayan Al-Saud</h4>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">Qatar</p>
+
+              <div className="flex justify-center gap-1 text-amber-400 mb-6">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+              
+              <p className="text-sm text-slate-600 italic leading-relaxed">
                 "Outstanding service! From document preparation to the final submission, they took care of all the headaches. I will definitely use their services again."
               </p>
-              <div className="flex items-center gap-4 mt-auto">
-                <div className="w-10 h-10 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold font-display">
-                  RA
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Rayan Al-Saud</h4>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Tourist</p>
-                </div>
-              </div>
+              
               <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-teal-100 transition-colors pointer-events-none" />
             </div>
           </div>

@@ -6,11 +6,12 @@ import ConcertHub from "./components/ConcertHub";
 import HappyClientsHub from "./components/HappyClientsHub";
 import ServicesHub from "./components/ServicesHub";
 import EPassportPage from "./components/EPassportPage";
+import VisaApplicationPage from "./components/VisaApplicationPage";
 import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle } from "lucide-react";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services" >("Spinning");
-  const [currentPage, setCurrentPage] = useState<"home" | "epassport">("home");
+  const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services">("Spinning");
+  const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa">("home");
   const [showConsultForm, setShowConsultForm] = useState(false);
   const [consultName, setConsultName] = useState("");
   const [consultDetail, setConsultDetail] = useState("");
@@ -46,7 +47,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-rose-200 selection:text-slate-900">
-      
+
       {/* Dynamic Celebration Pop-up / Notification Bar when winning a reward */}
       <AnimatePresence>
         {notification && (
@@ -71,6 +72,8 @@ export default function App() {
 
       {currentPage === "epassport" ? (
         <EPassportPage onBack={() => setCurrentPage("home")} />
+      ) : currentPage === "visa" ? (
+        <VisaApplicationPage onBack={() => setCurrentPage("home")} />
       ) : (
         <>
           {/* SECTION 1: SAUDI INVESTMENT PRIMARY LANDING PAGE AND INTEGRATED HOOK */}
@@ -82,6 +85,7 @@ export default function App() {
               scrollToHub(tab);
             }}
             onNavigateToEPassport={() => setCurrentPage("epassport")}
+            onNavigateToVisa={() => setCurrentPage("visa")}
           >
             {/* SECTION 2: INTERACTIVE CUSTOMER ENGAGEMENT HUB */}
             <section
@@ -90,7 +94,7 @@ export default function App() {
               className="py-20 px-4 md:px-12 bg-white border-t border-b border-slate-200"
             >
               <div className="max-w-5xl mx-auto space-y-12">
-                
+
 
 
                 {/* Dynamic Pivot of Active Visual Interface with Framer Motion */}
@@ -153,7 +157,7 @@ export default function App() {
                     <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-rose-500 shadow-md group-hover:scale-105 transition-all duration-300 relative z-20">
                       <img src="/image.png" alt="Consultant" className="w-full h-full object-cover object-top" />
                     </div>
-                    
+
                     <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">
                       BOOK NOW
                     </span>
@@ -166,6 +170,30 @@ export default function App() {
               </div>
             </section>
           </SaudiInvestmentLanding>
+
+          {/* SECTION 3: FOOTER SECTION (Refined under Vibrant Palette) */}
+          <footer id="contact" className="bg-slate-950 text-slate-400 py-12 px-4 md:px-12 border-t border-white/5 text-xs text-center space-y-4">
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <div className="border border-rose-500/20 bg-rose-500/10 rounded-lg p-1.5 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-rose-400" />
+                </div>
+                <span className="font-display font-black text-xs tracking-wider text-white">
+                  SAUDI INVESTMENT CONTRACTING
+                </span>
+              </div>
+              <div className="flex gap-6 font-mono font-bold text-[10px]">
+                <a href="#homepage" className="hover:text-white transition-colors">TOP</a>
+                <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
+                <a href="#category-hub" className="hover:text-rose-400 transition-colors font-semibold text-rose-400">ACTIVE HUB</a>
+              </div>
+              <div>
+                <p className="text-[10px] tracking-tight text-slate-500">
+                  Copyright &copy; 2026 Saudi Investment. Designed to exceed expectations.
+                </p>
+              </div>
+            </div>
+          </footer>
         </>
       )}
 
@@ -243,50 +271,6 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
-
-      {/* SECTION 3: FOOTER SECTION (Refined under Vibrant Palette) */}
-      <footer id="contact" className="bg-slate-950 text-slate-400 py-12 px-4 md:px-12 border-t border-white/5 text-xs text-center space-y-4">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="border border-rose-500/20 bg-rose-500/10 rounded-lg p-1.5 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-rose-400" />
-            </div>
-            <span className="font-display font-black text-xs tracking-wider text-white">
-              SAUDI INVESTMENT CONTRACTING
-            </span>
-          </div>
-          <div className="flex gap-6 font-mono font-bold text-[10px]">
-            <a href="#homepage" className="hover:text-white transition-colors">TOP</a>
-            <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
-            <a href="#category-hub" className="hover:text-rose-400 transition-colors font-semibold text-rose-400">ACTIVE HUB</a>
-          </div>
-          <div>
-            <p className="text-[10px] tracking-tight text-slate-500">
-              Copyright © 2026 Saudi Investment. Designed to exceed expectations.
-            </p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating WhatsApp Button */}
-      <a
-        href="https://wa.me/966501112222"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:bg-[#1EBE5D] hover:scale-110 transition-all z-50 flex items-center justify-center group"
-        aria-label="Chat on WhatsApp"
-      >
-        {/* Online Indicator */}
-        <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-100 border-2 border-[#25D366]"></span>
-        </span>
-
-        <MessageCircle className="w-7 h-7" />
-        <span className="absolute right-full mr-4 bg-white text-slate-800 text-xs font-bold px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-100">
-          Chat with us on WhatsApp
-        </span>
-      </a>
     </div>
   );
 }

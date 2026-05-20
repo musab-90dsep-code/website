@@ -4,13 +4,23 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
-      <nav className="h-[64px] bg-slate-900/90 border-b border-white/10 px-4 md:px-12 flex items-center sticky top-0 z-40 backdrop-blur-md">
-        <button 
+      <nav className="h-[64px] bg-slate-900/90 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+        {/* Logo & Brand */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-rose-500/30 italic text-xl">S</div>
+          <span className="font-display font-black text-sm md:text-base tracking-tight text-white">SAUDI INVESTMENT</span>
+        </div>
+        {/* Links */}
+        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+          <span className="text-rose-400">ই-পাসপোর্ট আবেদন</span>
+        </div>
+        {/* Back Button */}
+        <button
           onClick={onBack}
-          className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors font-semibold text-sm"
+          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-sm"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Home
+          <ArrowLeft className="w-4 h-4" />
+          হোমে ফিরে যান
         </button>
       </nav>
 
@@ -27,13 +37,13 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-200 font-bold text-[10px] uppercase tracking-widest mb-4">
             <FileText className="w-3.5 h-3.5" />
-            <span>Premium Service</span>
+            <span>প্রিমিয়াম সার্ভিস</span>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-display tracking-tight uppercase drop-shadow-lg">
-            E-Passport <br className="md:hidden" /> Application
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-display tracking-tight drop-shadow-lg">
+            ই-পাসপোর্ট <br className="md:hidden" /> আবেদন
           </h1>
-          <p className="mt-4 text-slate-300 font-medium max-w-xl mx-auto text-sm md:text-base">
-            Fast, reliable, and hassle-free E-Passport processing. We guide you through every step to ensure your application is approved without delays.
+          <p className="mt-4 text-slate-300 font-medium max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+            দ্রুত, নির্ভরযোগ্য এবং ঝামেলামুক্ত ই-পাসপোর্ট প্রসেসিং। আপনার আবেদন যাতে কোনো বিলম্ব ছাড়া অনুমোদিত হয়, সে জন্য আমরা প্রতিটি ধাপে আপনাকে সাহায্য করব।
           </p>
         </div>
       </div>
@@ -43,11 +53,11 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 md:p-12">
           
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display uppercase tracking-tight">
-              What You Need to Apply
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">
+              আবেদনের জন্য যা যা লাগবে
             </h2>
             <p className="text-slate-500 mt-2 text-sm md:text-base">
-              Please gather the following documents before starting your E-Passport application.
+              আপনার ই-পাসপোর্ট আবেদন শুরু করার আগে অনুগ্রহ করে নিচের কাগজপত্রগুলো সংগ্রহ করুন।
             </p>
           </div>
 
@@ -58,9 +68,9 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                 <UserCheck className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 mb-1">National ID (NID)</h3>
+                <h3 className="font-bold text-slate-900 mb-1 text-base">জাতীয় পরিচয়পত্র (NID)</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  A clear photocopy of your valid National Identity Card or online verified Birth Registration Certificate.
+                  আপনার বৈধ জাতীয় পরিচয়পত্রের একটি স্পষ্ট ফটোকপি অথবা অনলাইন যাচাইকৃত জন্ম নিবন্ধন সনদ।
                 </p>
               </div>
             </div>
@@ -71,9 +81,9 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 mb-1">Previous Passport</h3>
+                <h3 className="font-bold text-slate-900 mb-1 text-base">পূর্ববর্তী পাসপোর্ট</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Copy of your existing/old passport's information page (if applying for renewal or upgrade).
+                  আপনার বিদ্যমান/পুরাতন পাসপোর্টের তথ্য পাতার কপি (যদি নবায়ন বা আপগ্রেডের জন্য আবেদন করেন)।
                 </p>
               </div>
             </div>
@@ -84,9 +94,9 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                 <UploadCloud className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 mb-1">Proof of Profession</h3>
+                <h3 className="font-bold text-slate-900 mb-1 text-base">পেশার প্রমাণপত্র</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Copy of Iqama/Visa (for expats), employee ID card, or relevant documents supporting your listed profession.
+                  ইকামা/ভিসার কপি (প্রবাসীদের জন্য), এমপ্লয়ি আইডি কার্ড, অথবা আপনার উল্লেখিত পেশার স্বপক্ষে প্রমাণপত্র।
                 </p>
               </div>
             </div>
@@ -97,20 +107,20 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 mb-1">Application Form</h3>
+                <h3 className="font-bold text-slate-900 mb-1 text-base">আবেদনপত্র (Form)</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  Completed and printed E-Passport application summary. We will help you fill this out correctly.
+                  পূরণকৃত এবং প্রিন্ট করা ই-পাসপোর্ট আবেদন সামারি। এটি সঠিকভাবে পূরণ করতে আমরা আপনাকে সাহায্য করব।
                 </p>
               </div>
             </div>
           </div>
 
           <div className="mt-12 text-center">
-            <button className="bg-rose-500 text-white px-8 py-4 rounded-xl hover:bg-rose-600 transition-all font-display font-black text-sm uppercase tracking-widest shadow-xl shadow-rose-500/30 hover:scale-105 inline-flex items-center gap-2">
+            <button className="bg-rose-500 text-white px-8 py-4 rounded-xl hover:bg-rose-600 transition-all font-display font-black text-sm tracking-widest shadow-xl shadow-rose-500/30 hover:scale-105 inline-flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
-              Apply Now
+              এখনই আবেদন করুন
             </button>
-            <p className="mt-4 text-xs text-slate-400 font-mono">Need help? Contact our support team via WhatsApp.</p>
+            <p className="mt-4 text-xs text-slate-400 font-mono">কোনো সাহায্য প্রয়োজন? আমাদের সাপোর্ট টিমের সাথে হোয়াটসঅ্যাপে যোগাযোগ করুন।</p>
           </div>
           
         </div>
