@@ -1,5 +1,5 @@
 import { useState, FormEvent, ReactNode } from "react";
-import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sparkles, Building2, Mail, MapPin } from "lucide-react";
+import { UserCheck, Rocket, DollarSign, Award, Snowflake, PenTool, PhoneCall, Sparkles, Building2, Mail, MapPin, FileText, Plane, Star, Quote } from "lucide-react";
 
 export default function SaudiInvestmentLanding({
   onCallForVisit,
@@ -104,14 +104,64 @@ export default function SaudiInvestmentLanding({
 
       {children}
 
+      {/* 3.5 ABOUT US */}
+      <section id="about" className="py-20 bg-white px-4 md:px-12 relative overflow-hidden">
+        {/* Background Decorative element */}
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* Text Content */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-[10px] uppercase tracking-widest">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>About Us</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 font-display leading-tight uppercase tracking-tight">
+                Your Trusted Partner For <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Growth & Success</span>
+              </h2>
+              <p className="text-sm md:text-base text-slate-500 leading-relaxed font-medium">
+                We are a dedicated team of professionals committed to providing seamless and efficient services tailored to your needs. From E-Passport processing to Visa applications, our expertise ensures a hassle-free experience. 
+              </p>
+              <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+                Our mission is to bridge the gap between complex procedures and your ultimate goals, delivering results with transparency, speed, and uncompromising quality.
+              </p>
+              <div className="pt-4 flex items-center gap-4">
+                <button className="px-6 py-3 bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg">
+                  Learn More
+                </button>
+                <div className="flex items-center gap-2 text-slate-600 font-semibold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <span>10k+ Happy Clients</span>
+                </div>
+              </div>
+            </div>
 
+            {/* Visual/Image Content */}
+            <div className="relative">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative shadow-2xl border border-slate-200/60 group">
+                <img src="/image.png" alt="About Us" className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+              </div>
+              
+              {/* Floating Accent */}
+              <div className="absolute -bottom-6 -left-6 bg-white p-5 rounded-2xl shadow-xl border border-slate-100 flex flex-col gap-1 hidden md:flex">
+                <div className="text-3xl font-black text-blue-600">100%</div>
+                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Satisfaction<br/>Guaranteed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 4. WHY CHOOSE US (Grounded in Vibrant Palette 4-accent layout: rose, orange, teal, indigo) */}
       <section className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase">Why Choose Us</h2>
-            <p className="text-xs text-slate-500 font-mono mt-1">Providing excellence in aircon & interior systems</p>
+            <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase">Our Service</h2>
+            <p className="text-xs text-slate-500 font-mono mt-1">Providing reliable E-Passport & Visa application services</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -119,13 +169,13 @@ export default function SaudiInvestmentLanding({
             <div className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-rose-400 hover:bg-rose-50/40 transition-all shadow-xs flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600">
-                  <UserCheck className="h-5 w-5" />
+                  <FileText className="h-5 w-5" />
                 </div>
                 <h3 className="font-bold font-display text-base text-slate-950 leading-snug">
-                  Experienced and Certified Technicians
+                  E-Passport Application
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-500">
-                  Our skilled team is trained and certified to handle all aircon and interior works with precision, ensuring reliable service and long-lasting performance for every project.
+                  Hassle-free and fast E-Passport application processing. We guide you through the entire process, ensuring all documentation is perfectly aligned for quick approval.
                 </p>
               </div>
             </div>
@@ -134,13 +184,13 @@ export default function SaudiInvestmentLanding({
             <div className="group bg-white p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50/40 transition-all shadow-xs flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
-                  <Rocket className="h-5 w-5" />
+                  <Plane className="h-5 w-5" />
                 </div>
                 <h3 className="font-bold font-display text-base text-slate-950 leading-snug">
-                  Fast Response & Same-Day Service
+                  Visa Application
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-500">
-                  We understand urgency. Our technicians are always ready to respond quickly, offering same-day service to restore comfort and convenience without unnecessary delays.
+                  Expert assistance for your Visa applications. Whether for business, tourism, or work, our team ensures your application is submitted accurately and efficiently.
                 </p>
               </div>
             </div>
@@ -177,6 +227,93 @@ export default function SaudiInvestmentLanding({
           </div>
         </div>
       </section>
+
+      {/* 4.5 HAPPY CLIENTS SECTION */}
+      <section className="py-20 bg-white px-4 md:px-12 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-[10px] uppercase tracking-widest mx-auto">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Testimonials</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 font-display tracking-tight uppercase">
+              Our Happy Clients
+            </h2>
+            <p className="text-sm text-slate-500 font-medium max-w-2xl mx-auto">
+              Don't just take our word for it. See what our valued clients have to say about our fast, reliable, and professional services.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="flex gap-1 text-amber-400 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+                "The E-Passport application process was incredibly smooth. They guided me through every step, and I received my passport much faster than expected. Highly recommended!"
+              </p>
+              <div className="flex items-center gap-4 mt-auto">
+                <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold font-display">
+                  AH
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Ahmed Hassan</h4>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Business Traveler</p>
+                </div>
+              </div>
+              <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-indigo-100 transition-colors pointer-events-none" />
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="flex gap-1 text-amber-400 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+                "I needed a business visa urgently, and the team handled everything flawlessly. Professional, transparent pricing, and excellent communication throughout."
+              </p>
+              <div className="flex items-center gap-4 mt-auto">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center font-bold font-display">
+                  SM
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Sarah Malik</h4>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Corporate Executive</p>
+                </div>
+              </div>
+              <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-rose-100 transition-colors pointer-events-none" />
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="flex gap-1 text-amber-400 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-sm text-slate-600 italic leading-relaxed mb-6">
+                "Outstanding service! From document preparation to the final submission, they took care of all the headaches. I will definitely use their services again."
+              </p>
+              <div className="flex items-center gap-4 mt-auto">
+                <div className="w-10 h-10 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center font-bold font-display">
+                  RA
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Rayan Al-Saud</h4>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Tourist</p>
+                </div>
+              </div>
+              <Quote className="absolute top-6 right-6 w-12 h-12 text-slate-200 opacity-50 group-hover:text-teal-100 transition-colors pointer-events-none" />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 5. CONTACT SECTION */}
       <section id="contact" className="py-16 bg-white px-4 md:px-12">
         <div className="max-w-4xl mx-auto bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-10 text-center">

@@ -5,7 +5,7 @@ import SpinningHub from "./components/SpinningHub";
 import ConcertHub from "./components/ConcertHub";
 import HappyClientsHub from "./components/HappyClientsHub";
 import ServicesHub from "./components/ServicesHub";
-import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2 } from "lucide-react";
+import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle } from "lucide-react";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services" >("Spinning");
@@ -153,7 +153,7 @@ export default function App() {
                 </div>
                 
                 <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">
-                  CONSULT
+                  BOOK NOW
                 </span>
               </a>
               <span className="text-slate-500 text-[11px] font-mono mt-1 uppercase tracking-wider font-bold">
@@ -263,6 +263,26 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/966501112222"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:bg-[#1EBE5D] hover:scale-110 transition-all z-50 flex items-center justify-center group"
+        aria-label="Chat on WhatsApp"
+      >
+        {/* Online Indicator */}
+        <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-100 border-2 border-[#25D366]"></span>
+        </span>
+
+        <MessageCircle className="w-7 h-7" />
+        <span className="absolute right-full mr-4 bg-white text-slate-800 text-xs font-bold px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-100">
+          Chat with us on WhatsApp
+        </span>
+      </a>
     </div>
   );
 }

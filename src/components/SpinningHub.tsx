@@ -217,11 +217,11 @@ export default function SpinningHub({ onRewardWon }: { onRewardWon?: (reward: st
   return (
     <div className="w-full flex items-start justify-center py-10 px-4 relative">
       {/* Centered Logo */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
-        <img src="/logo.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+      <div className="absolute -top-10 md:-top-12 left-1/2 -translate-x-1/2 z-30">
+        <img src="/logo.png" alt="Logo" className="h-40 md:h-48 w-auto object-contain drop-shadow-md" />
       </div>
 
-      <div className="flex flex-col md:flex-row gap-16 md:gap-24 items-start justify-center mt-16 relative">
+      <div className="flex flex-col md:flex-row gap-16 md:gap-40 lg:gap-56 items-center md:items-start justify-center mt-16 relative w-full max-w-7xl mx-auto">
 
         {/* Wheel 1 */}
         <div className="flex flex-col items-center">
