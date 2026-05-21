@@ -1,0 +1,90 @@
+import React from "react";
+import { FileText, Plane, DollarSign, Award, Star, Sparkles, Mail, MapPin } from "lucide-react";
+
+export type FeatureCard = { id: string; title: string; description: string; icon_name: string; color: string; order_num: number };
+
+const ICON_MAP: Record<string, any> = { FileText, Plane, DollarSign, Award, Star, Sparkles, Mail, MapPin };
+const getIcon = (name: string) => ICON_MAP[name] || FileText;
+
+const BORDER_COLOR: Record<string, string> = {
+  rose: "border-rose-100",
+  orange: "border-orange-100",
+  teal: "border-teal-100",
+  indigo: "border-indigo-100",
+  slate: "border-slate-100",
+};
+
+const ICON_COLOR: Record<string, string> = {
+  rose: "bg-rose-100 text-rose-600",
+  orange: "bg-orange-100 text-orange-600",
+  teal: "bg-teal-100 text-teal-600",
+  indigo: "bg-indigo-100 text-indigo-600",
+  slate: "bg-slate-100 text-slate-600",
+};
+
+interface OurServicesProps {
+  title: string;
+  subtitle: string;
+  featureCards: FeatureCard[];
+  onNavigateToEPassport?: () => void;
+  onNavigateToVisa?: () => void;
+}
+
+export default function OurServices({
+  title,
+  subtitle,
+  featureCards,
+  onNavigateToEPassport,
+  onNavigateToVisa,
+}: OurServicesProps) {
+  return (
+    <section id="service" className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase">
+            {title}
+          </h2>
+          <p className="text-xs text-slate-500 font-mono mt-1">{subtitle}</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featureCards.map((card, idx) => {
+            const Icon = getIcon(card.icon_name);
+            const isEpassport = idx === 0;
+            const isVisa = idx === 1;
+            return (
+              <div
+                key={card.id}
+                onClick={
+                  isEpassport
+                    ? onNavigateToEPassport
+                    : isVisa
+                    ? onNavigateToVisa
+                    : undefined
+                }
+                className={`group bg-white p-6 rounded-2xl border-2 border-slate-100 transition-all shadow-xs flex flex-col justify-between ${
+                  BORDER_COLOR[card.color] || BORDER_COLOR.rose
+                } ${isEpassport || isVisa ? "cursor-pointer" : ""}`}
+              >
+                <div className="space-y-4">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      ICON_COLOR[card.color] || ICON_COLOR.rose
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-bold font-display text-base text-slate-950 leading-snug">
+                    {card.title}
+                  </h3>
+                  <p className="text-xs leading-relaxed text-slate-500">
+                    {card.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,255 +1,224 @@
-import { useState, FormEvent } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { HAPPY_CLIENTS } from "../data";
-import { ClientReview } from "../types";
-import { Star, Quote, ShieldCheck, MapPin, Plus, Sparkles } from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { Star, Quote, Plus, Loader2 } from "lucide-react";
+
+type Review = {
+  id: string;
+  name: string;
+  location: string;
+  avatar_letter: string;
+  color_class: string;
+  rating: number;
+  review_text: string;
+  service_received: string;
+};
+
+const FALLBACK_REVIEWS: Review[] = [
+  { id: "1", name: "Ahmed Hassan", location: "Saudi Arabia", avatar_letter: "AH", color_class: "bg-indigo-500", rating: 5, review_text: "The E-Passport application process was incredibly smooth. They guided me through every step, and I received my passport much faster than expected. Highly recommended!", service_received: "E-Passport Application" },
+  { id: "2", name: "Sarah Malik", location: "United Arab Emirates", avatar_letter: "SM", color_class: "bg-rose-500", rating: 5, review_text: "I needed a business visa urgently, and the team handled everything flawlessly. Professional, transparent pricing, and excellent communication throughout.", service_received: "Visa Application" },
+  { id: "3", name: "Rayan Al-Saud", location: "Qatar", avatar_letter: "RA", color_class: "bg-teal-500", rating: 5, review_text: "Outstanding service! From document preparation to the final submission, they took care of all the headaches. I will definitely use their services again.", service_received: "Business Consultancy" },
+];
+
+const CITY_OPTIONS = ["Jeddah", "Riyadh", "Dammam", "Al Khobar", "Medina", "Mecca", "Tabuk"];
+const SERVICE_OPTIONS = ["E-Passport Application", "Visa Application", "Investment License", "CR Registration", "Muqeem Portal", "Qiwa Portal", "General Consultancy"];
+const COLOR_OPTIONS = ["bg-teal-500", "bg-rose-500", "bg-indigo-500", "bg-amber-500", "bg-emerald-500", "bg-violet-500"];
 
 export default function HappyClientsHub() {
-  const [activeClient, setActiveClient] = useState<ClientReview>(HAPPY_CLIENTS[0]);
-  const [reviewsList, setReviewsList] = useState<ClientReview[]>(HAPPY_CLIENTS);
-  
+  const [reviews, setReviews] = useState<Review[]>(FALLBACK_REVIEWS);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newCity, setNewCity] = useState("Riyadh");
-  const [newReviewText, setNewReviewText] = useState("");
-  const [newService, setNewService] = useState("General Servicing");
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5 });
 
-  const addNewReview = (e: FormEvent) => {
-    e.preventDefault();
-    if (!newName || !newReviewText) return;
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-    const newReview: ClientReview = {
-      id: `custom-client-${Date.now()}`,
-      name: newName,
-      location: newCity,
-      avatarLetter: newName.charAt(0).toUpperCase(),
-      colorClass: "bg-teal-500 ring-2 ring-teal-200",
-      rating: 5,
-      reviewText: newReviewText,
-      serviceReceived: newService,
-    };
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
-    const updatedList = [...reviewsList, newReview];
-    setReviewsList(updatedList);
-    setActiveClient(newReview);
-    
-    setNewName("");
-    setNewReviewText("");
-    setShowAddForm(false);
+  useEffect(() => {
+    if (reviews.length <= 1) return;
+
+    const timer = setInterval(() => {
+      if (carouselRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = carouselRef.current;
+
+        // ১টি ফুল সেটের মোট উইডথ (যেহেতু আমরা নিচে ডেটা ডাবল করেছি)
+        const halfScrollWidth = scrollWidth / 2;
+        const cardWidth = window.innerWidth >= 768 ? clientWidth / 3 : clientWidth;
+
+        // যদি স্ক্রোল করতে করতে আমরা প্রথম হাফ পার করে ফেলি
+        if (scrollLeft >= halfScrollWidth - 10) {
+          // কোনো অ্যানিমেশন ছাড়া চোখের পলকে একদম শুরুতে রিসেট হবে (ইউজার টেরও পাবে না)
+          carouselRef.current.scrollTo({ left: 0, behavior: 'auto' });
+
+          // রিসেট হওয়ার সাথে সাথেই পরবর্তী কার্ডে স্মুথলি স্লাইড করবে
+          setTimeout(() => {
+            if (carouselRef.current) {
+              carouselRef.current.scrollTo({ left: cardWidth, behavior: 'smooth' });
+            }
+          }, 30);
+        } else {
+          // স্বাভাবিকভাবে বামে স্লাইড হতে থাকবে
+          carouselRef.current.scrollTo({ left: scrollLeft + cardWidth, behavior: 'smooth' });
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [reviews.length]);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setReviews(data);
+      }
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleAddReview = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.review_text) return;
+    setSubmitting(true);
+
+    const avatar_letter = form.name.trim().split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+
+    try {
+      const { error } = await supabase
+        .from("reviews")
+        .insert([{ ...form, avatar_letter }])
+        .select();
+
+      if (error) throw error;
+
+      setForm({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5 });
+      setShowAddForm(false);
+      await fetchReviews();
+    } catch (err) {
+      console.error("Error adding review:", err);
+      alert("Something went wrong while submitting your review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ইনফিনিট লুপ ট্র্যাকিং এর জন্য রিভিউ লিস্ট ডাবল করা হয়েছে
+  const extendedReviews = [...reviews, ...reviews];
+
   return (
-    <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200">
-      <div className="max-w-2xl mx-auto text-center mb-10">
-        <span className="inline-flex items-center gap-1.5 px-4.5 py-1.5 rounded-full text-xs font-black bg-teal-500/10 text-teal-600 font-mono uppercase tracking-widest border border-teal-500/20">
-          User Satisfaction Engine
-        </span>
-        <h3 className="text-3xl font-black text-slate-900 mt-3 font-display uppercase tracking-tight">
-          Happy Clients & Testimonials
-        </h3>
-        <p className="text-sm text-teal-600 mt-1 font-mono uppercase tracking-widest font-black">
-          Our Happy Clients
-        </p>
-      </div>
-
-      <div className="max-w-3xl mx-auto">
-        {/* Spotlight Showcase of selected client */}
-        <div className="relative bg-white border border-slate-100 p-8 rounded-2xl shadow-xs min-h-[225px] flex flex-col justify-between overflow-hidden">
-          {/* Decorative Quote Icon Background */}
-          <div className="absolute right-4 top-4 text-slate-100 pointer-events-none">
-            <Quote className="h-28 w-28 stroke-[1px] opacity-25" />
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeClient.id}
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.98 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-4 relative z-10"
+    <div className="max-w-6xl mx-auto w-full flex flex-col items-center relative">
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
+        </div>
+      ) : (
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-8 pb-8 pt-12 px-4 w-full"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {extendedReviews.map((review, index) => (
+            <div
+              // id এর সাথে index যুক্ত করে ইউনিক কি (key) দেওয়া হয়েছে যেন রিঅ্যাক্ট ওয়ার্নিং না দেয়
+              key={`${review.id}-${index}`}
+              className="snap-start shrink-0 w-full md:w-[calc(33.333%-22px)] relative bg-slate-50 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col items-center mt-6 group hover:shadow-md transition-shadow"
             >
-              {/* Rating and Service Tag */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  {[...Array(activeClient.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-teal-5050 fill-teal-400 text-teal-500" />
-                  ))}
-                </div>
-                <span className="text-[11px] font-mono bg-teal-50 text-teal-700 px-3 py-1 rounded-full font-bold border border-teal-100">
-                  {activeClient.serviceReceived}
+              {/* Quote Background */}
+              <div className="absolute right-6 top-6 text-slate-200 pointer-events-none">
+                <Quote className="h-12 w-12 stroke-[2px] opacity-40 group-hover:opacity-70 transition-opacity" />
+              </div>
+
+              {/* Avatar Overlap */}
+              <div className={`absolute -top-10 h-20 w-20 rounded-full ${review.color_class || 'bg-indigo-100'} ring-[6px] ring-white flex items-center justify-center shadow-md`}>
+                <span className="text-xl font-bold font-display uppercase tracking-wider text-white">
+                  {review.avatar_letter}
                 </span>
               </div>
 
-              {/* Review Text */}
-              <blockquote className="text-sm md:text-base text-slate-700 italic font-semibold leading-relaxed">
-                &ldquo;{activeClient.reviewText}&rdquo;
-              </blockquote>
+              {/* Card Content */}
+              <div className="mt-10 flex flex-col items-center text-center w-full">
+                <h4 className="font-bold text-slate-900 font-display text-lg tracking-wide">{review.name}</h4>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mb-4">
+                  {review.location}
+                </p>
 
-              {/* Client Bio */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white font-bold font-display shadow-sm text-sm">
-                  {activeClient.avatarLetter}
+                {/* Stars */}
+                <div className="flex items-center gap-1 mb-6">
+                  {[...Array(review.rating || 5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
                 </div>
-                <div>
-                  <div className="font-bold text-slate-900 text-sm md:text-base font-display flex items-center gap-1.5 uppercase tracking-wide">
-                    {activeClient.name}
-                    <ShieldCheck className="h-4 w-4 text-teal-500 fill-teal-50" />
-                  </div>
-                  <div className="text-xs text-slate-500 font-mono flex items-center gap-1">
-                    <MapPin className="h-3 w-3 text-teal-500" />
-                    <span>Verified Client • {activeClient.location}</span>
-                  </div>
-                </div>
+
+                {/* Review Text */}
+                <blockquote className="text-sm text-slate-600 italic leading-relaxed">
+                  "{review.review_text}"
+                </blockquote>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          ))}
         </div>
+      )}
 
-        {/* 8 Selector Nodes in Teal palette */}
-        <div className="flex flex-col items-center gap-2 mt-8">
-          <div className="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-widest">
-            Select Node To View Testimonial
-          </div>
-          
-          <div className="flex justify-center flex-wrap gap-2.5 max-w-lg mt-1 select-none">
-            {reviewsList.map((client, index) => {
-              const isActive = activeClient.id === client.id;
-              return (
-                <button
-                  key={client.id}
-                  onClick={() => setActiveClient(client)}
-                  className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-teal-500 text-white w-9 h-9 scale-110 ring-4 ring-teal-100 shadow-md"
-                      : "bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100"
-                  }`}
-                  title={client.name}
-                >
-                  <span className="text-xs font-mono font-bold leading-none">
-                    {index + 1}
-                  </span>
+      {/* Add Review Button & Form */}
+      <div className="mt-6 mb-4 flex flex-col items-center w-full max-w-2xl px-4">
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-md cursor-pointer"
+        >
+          <Plus className="w-4 h-4" /> Add Review
+        </button>
 
-                  {isActive && (
-                    <span className="absolute -inset-1 rounded-full border-2 border-teal-400 animate-ping opacity-30 pointer-events-none" />
-                  )}
-                </button>
-              );
-            })}
-
-            {/* Plus button to add custom review */}
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-all border border-slate-300 cursor-pointer"
-              title="Add Your Verified Review"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Add Review Form */}
         <AnimatePresence>
           {showAddForm && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mt-6"
+              className="overflow-hidden mt-6 w-full"
             >
-              <form onSubmit={addNewReview} className="p-6 bg-white rounded-2xl border border-slate-200 space-y-4">
-                <div className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5 font-display uppercase tracking-wide">
-                  <Sparkles className="h-4 w-4 text-teal-500 animate-pulse" />
-                  Write Your Aircon & Service Review
+              <form onSubmit={handleAddReview} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 relative text-left">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold"
+                >
+                  ✕
+                </button>
+                <h4 className="font-bold text-slate-800 text-sm">Add New Testimonial (Admin/Demo)</h4>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input required placeholder="Client Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full text-xs px-3 py-2 border rounded-lg" />
+                  <select value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full text-xs px-3 py-2 border rounded-lg">
+                    {CITY_OPTIONS.map(c => <option key={c}>{c}</option>)}
+                  </select>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 font-mono uppercase mb-1">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder="e.g. Faisal Al-Shammari"
-                      className="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2.5 focus:outline-none focus:border-teal-500 font-sans"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 font-mono uppercase mb-1">
-                      City Location
-                    </label>
-                    <select
-                      value={newCity}
-                      onChange={(e) => setNewCity(e.target.value)}
-                      className="w-full text-xs border border-slate-300 bg-white rounded-lg px-2.5 py-2.5 focus:outline-none focus:border-teal-500 font-mono"
-                    >
-                      <option value="Riyadh">Riyadh</option>
-                      <option value="Jeddah">Jeddah</option>
-                      <option value="Dammam">Dammam</option>
-                      <option value="Al Khobar">Al Khobar</option>
-                      <option value="Medina">Medina</option>
-                      <option value="Mecca">Mecca</option>
-                      <option value="Tabuk">Tabuk</option>
-                    </select>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <select value={form.service_received} onChange={e => setForm({ ...form, service_received: e.target.value })} className="w-full text-xs px-3 py-2 border rounded-lg">
+                    {SERVICE_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                  <select value={form.color_class} onChange={e => setForm({ ...form, color_class: e.target.value })} className="w-full text-xs px-3 py-2 border rounded-lg">
+                    {COLOR_OPTIONS.map(c => <option key={c} value={c}>{c.replace('bg-', '').replace('-500', '')}</option>)}
+                  </select>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 font-mono uppercase mb-1">
-                      Service Selected
-                    </label>
-                    <select
-                      value={newService}
-                      onChange={(e) => setNewService(e.target.value)}
-                      className="w-full text-xs border border-slate-200 bg-white rounded-lg px-2.5 py-2.5 focus:outline-none focus:border-teal-500 font-sans"
-                    >
-                      <option value="General Aircon Servicing">General Aircon Servicing</option>
-                      <option value="Aircon Chemical Wash">Aircon Chemical Wash</option>
-                      <option value="Aircon Emergency Repair">Aircon Emergency Repair</option>
-                      <option value="Interior spatial consultation">Interior Spatial Consultation</option>
-                      <option value="Bespoke luxury remodeling">Bespoke Luxury Remodeling</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end">
-                    <span className="text-[10px] text-slate-400 font-mono leading-tight">
-                      *Note: Submitted reviews will dynamically register as a selectable node button above.
-                    </span>
-                  </div>
-                </div>
+                <textarea required placeholder="Write review here..." value={form.review_text} onChange={e => setForm({ ...form, review_text: e.target.value })} rows={3} className="w-full text-xs px-3 py-2 border rounded-lg" />
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 font-mono uppercase mb-1">
-                    Your Testimonial Review text
-                  </label>
-                  <textarea
-                    required
-                    value={newReviewText}
-                    onChange={(e) => setNewReviewText(e.target.value)}
-                    rows={3}
-                    placeholder="Describe your satisfaction with the technicians, response time, or custom design layouts..."
-                    className="w-full text-xs border border-slate-200 rounded-lg px-2.5 py-2.5 focus:outline-none focus:border-teal-500 font-sans"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2.5 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="px-4 py-2 border border-slate-250 rounded-full text-xs text-slate-500 hover:bg-slate-50 font-mono cursor-pointer"
-                  >
-                    CANCEL
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer shadow-lg shadow-teal-500/10"
-                  >
-                    SUBMIT VERIFIED NODE
-                  </button>
-                </div>
+                <button disabled={submitting} type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs transition-colors tracking-widest uppercase mt-2">
+                  {submitting ? "Submitting..." : "Submit Review"}
+                </button>
               </form>
             </motion.div>
           )}

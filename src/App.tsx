@@ -1,4 +1,4 @@
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef, FormEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SaudiInvestmentLanding from "./components/SaudiInvestmentLanding";
 import SpinningHub from "./components/SpinningHub";
@@ -8,15 +8,32 @@ import ServicesHub from "./components/ServicesHub";
 import EPassportPage from "./components/EPassportPage";
 import VisaApplicationPage from "./components/VisaApplicationPage";
 import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle } from "lucide-react";
+import AdminPanel from "./components/AdminPanel";
+import { supabase } from "./lib/supabase";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services">("Spinning");
-  const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa" | "admin">("home");
   const [showConsultForm, setShowConsultForm] = useState(false);
   const [consultName, setConsultName] = useState("");
   const [consultDetail, setConsultDetail] = useState("");
   const [consultSubmitted, setConsultSubmitted] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [footerCompanyName, setFooterCompanyName] = useState("AL NAZIM TRAVELS CONSULTANCY");
+  const [footerCopyright, setFooterCopyright] = useState("Copyright © 2026 Al Nazim Travels. Designed to exceed expectations.");
+
+  useEffect(() => {
+    const fetchFooter = async () => {
+      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["footer_company_name", "footer_copyright"]);
+      if (data) {
+        data.forEach((row: any) => {
+          if (row.key === "footer_company_name") setFooterCompanyName(row.value);
+          if (row.key === "footer_copyright") setFooterCopyright(row.value);
+        });
+      }
+    };
+    fetchFooter();
+  }, []);
 
   const hubSectionRef = useRef<HTMLDivElement>(null);
 
@@ -34,9 +51,17 @@ export default function App() {
     }, 100);
   };
 
-  const handleConsultSubmit = (e: FormEvent) => {
+  const handleConsultSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setConsultSubmitted(true);
+
+    // Save to Supabase
+    try {
+      await supabase.from("leads").insert([{ name: consultName, requirement: consultDetail }]);
+    } catch (err) {
+      console.error("Failed to insert lead", err);
+    }
+
     setTimeout(() => {
       setConsultSubmitted(false);
       setShowConsultForm(false);
@@ -70,7 +95,9 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {currentPage === "epassport" ? (
+      {currentPage === "admin" ? (
+        <AdminPanel onBack={() => setCurrentPage("home")} />
+      ) : currentPage === "epassport" ? (
         <EPassportPage onBack={() => setCurrentPage("home")} />
       ) : currentPage === "visa" ? (
         <VisaApplicationPage onBack={() => setCurrentPage("home")} />
@@ -179,7 +206,7 @@ export default function App() {
                   <Building2 className="h-4 w-4 text-rose-400" />
                 </div>
                 <span className="font-display font-black text-xs tracking-wider text-white">
-                  SAUDI INVESTMENT CONTRACTING
+                  {footerCompanyName}
                 </span>
               </div>
               <div className="flex gap-6 font-mono font-bold text-[10px]">
@@ -189,7 +216,7 @@ export default function App() {
               </div>
               <div>
                 <p className="text-[10px] tracking-tight text-slate-500">
-                  Copyright &copy; 2026 Saudi Investment. Designed to exceed expectations.
+                  {footerCopyright} <span onClick={() => setCurrentPage("admin")} className="cursor-pointer hover:text-slate-300">Admin</span>
                 </p>
               </div>
             </div>
@@ -223,7 +250,7 @@ export default function App() {
               {!consultSubmitted ? (
                 <form onSubmit={handleConsultSubmit} className="space-y-3.5">
                   <p className="text-xs text-slate-500 leading-normal">
-                    This consult dispatcher matches you directly to a senior structural mechanical engineer in Riyadh or Jeddah.
+                    This consult dispatcher matches you directly to our senior business and travel consultants in Jeddah.
                   </p>
                   <div>
                     <label className="block text-[10px] font-mono font-bold text-slate-500 mb-1">Your Name</label>
@@ -243,7 +270,7 @@ export default function App() {
                       value={consultDetail}
                       onChange={(e) => setConsultDetail(e.target.value)}
                       rows={3}
-                      placeholder="e.g. Looking to design custom ventilation layout for central villa or spatial overhaul, budget details, etc."
+                      placeholder="e.g. Looking to apply for an Investor Trading License, e-passport processing, or comprehensive visa services."
                       className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-rose-500"
                     />
                   </div>

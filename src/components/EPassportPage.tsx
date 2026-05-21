@@ -1,6 +1,51 @@
-import { ArrowLeft, CheckCircle2, FileText, UploadCloud, CreditCard, UserCheck } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, CheckCircle2, FileText, UploadCloud, CreditCard, UserCheck, Plane, DollarSign, Award, Star, Building2, Sparkles } from "lucide-react";
+import { supabase } from "../lib/supabase";
+
+const IconMap: Record<string, any> = {
+  FileText, Plane, DollarSign, Award, Star, Building2, Sparkles, CheckCircle2, UserCheck, UploadCloud
+};
+
+type EPassportRequirement = { id: string; title: string; desc_text: string; icon_name: string; color: string; order_num: number };
 
 export default function EPassportPage({ onBack }: { onBack: () => void }) {
+  const [title, setTitle] = useState("ই-পাসপোর্ট আবেদন");
+  const [subtitle, setSubtitle] = useState("দ্রুত, নির্ভরযোগ্য এবং ঝামেলামুক্ত ই-পাসপোর্ট প্রসেসিং। আপনার আবেদন যাতে কোনো বিলম্ব ছাড়া অনুমোদিত হয়, সে জন্য আমরা প্রতিটি ধাপে আপনাকে সাহায্য করব।");
+  const [reqTitle, setReqTitle] = useState("আবেদনের জন্য যা যা লাগবে");
+  const [reqSubtitle, setReqSubtitle] = useState("আপনার ই-পাসপোর্ট আবেদন শুরু করার আগে অনুগ্রহ করে নিচের কাগজপত্রগুলো সংগ্রহ করুন।");
+  const [requirements, setRequirements] = useState<EPassportRequirement[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const [settingsRes, reqsRes] = await Promise.all([
+        supabase.from("site_settings").select("*"),
+        supabase.from("epassport_requirements").select("*").order("order_num")
+      ]);
+
+      if (settingsRes.data) {
+        const map: Record<string, string> = {};
+        settingsRes.data.forEach(s => map[s.key] = s.value);
+        if (map.epassport_page_title) setTitle(map.epassport_page_title);
+        if (map.epassport_page_subtitle) setSubtitle(map.epassport_page_subtitle);
+        if (map.epassport_req_title) setReqTitle(map.epassport_req_title);
+        if (map.epassport_req_subtitle) setReqSubtitle(map.epassport_req_subtitle);
+      }
+
+      if (reqsRes.data && reqsRes.data.length > 0) {
+        setRequirements(reqsRes.data);
+      } else {
+        // Fallback
+        setRequirements([
+          { id: "1", title: "জাতীয় পরিচয়পত্র (NID)", desc_text: "আপনার বৈধ জাতীয় পরিচয়পত্রের একটি স্পষ্ট ফটোকপি অথবা অনলাইন যাচাইকৃত জন্ম নিবন্ধন সনদ।", icon_name: "UserCheck", color: "blue", order_num: 1 },
+          { id: "2", title: "পূর্ববর্তী পাসপোর্ট", desc_text: "আপনার বিদ্যমান/পুরাতন পাসপোর্টের তথ্য পাতার কপি (যদি নবায়ন বা আপগ্রেডের জন্য আবেদন করেন)।", icon_name: "FileText", color: "emerald", order_num: 2 },
+          { id: "3", title: "পেশার প্রমাণপত্র", desc_text: "ইকামা/ভিসার কপি (প্রবাসীদের জন্য), এমপ্লয়ি আইডি কার্ড, অথবা আপনার উল্লেখিত পেশার স্বপক্ষে প্রমাণপত্র।", icon_name: "UploadCloud", color: "rose", order_num: 3 },
+          { id: "4", title: "আবেদনপত্র (Form)", desc_text: "পূরণকৃত এবং প্রিন্ট করা ই-পাসপোর্ট আবেদন সামারি। এটি সঠিকভাবে পূরণ করতে আমরা আপনাকে সাহায্য করব।", icon_name: "CheckCircle2", color: "purple", order_num: 4 },
+        ]);
+      }
+    };
+    loadData();
+  }, []);
+
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
@@ -12,7 +57,7 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
         </div>
         {/* Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <span className="text-rose-400">ই-পাসপোর্ট আবেদন</span>
+          <span className="text-rose-400">{title}</span>
         </div>
         {/* Back Button */}
         <button
@@ -26,7 +71,6 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
 
       {/* Cover Photo Section */}
       <div className="relative w-full h-[40vh] md:h-[50vh] bg-slate-900">
-        {/* Placeholder for Cover Photo - using a gradient/image blend */}
         <img 
           src="/epassport_cover.png" 
           alt="E-Passport Services" 
@@ -40,10 +84,14 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
             <span>প্রিমিয়াম সার্ভিস</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-display tracking-tight drop-shadow-lg">
-            ই-পাসপোর্ট <br className="md:hidden" /> আবেদন
+            {title.split(' ').map((word, i) => (
+              <React.Fragment key={i}>
+                {word} {i === 0 && <br className="md:hidden" />}
+              </React.Fragment>
+            ))}
           </h1>
           <p className="mt-4 text-slate-300 font-medium max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-            দ্রুত, নির্ভরযোগ্য এবং ঝামেলামুক্ত ই-পাসপোর্ট প্রসেসিং। আপনার আবেদন যাতে কোনো বিলম্ব ছাড়া অনুমোদিত হয়, সে জন্য আমরা প্রতিটি ধাপে আপনাকে সাহায্য করব।
+            {subtitle}
           </p>
         </div>
       </div>
@@ -54,65 +102,30 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
           
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">
-              আবেদনের জন্য যা যা লাগবে
+              {reqTitle}
             </h2>
             <p className="text-slate-500 mt-2 text-sm md:text-base">
-              আপনার ই-পাসপোর্ট আবেদন শুরু করার আগে অনুগ্রহ করে নিচের কাগজপত্রগুলো সংগ্রহ করুন।
+              {reqSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-            {/* Requirement 1 */}
-            <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                <UserCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-1 text-base">জাতীয় পরিচয়পত্র (NID)</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  আপনার বৈধ জাতীয় পরিচয়পত্রের একটি স্পষ্ট ফটোকপি অথবা অনলাইন যাচাইকৃত জন্ম নিবন্ধন সনদ।
-                </p>
-              </div>
-            </div>
-
-            {/* Requirement 2 */}
-            <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-1 text-base">পূর্ববর্তী পাসপোর্ট</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  আপনার বিদ্যমান/পুরাতন পাসপোর্টের তথ্য পাতার কপি (যদি নবায়ন বা আপগ্রেডের জন্য আবেদন করেন)।
-                </p>
-              </div>
-            </div>
-
-            {/* Requirement 3 */}
-            <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/50 transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                <UploadCloud className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-1 text-base">পেশার প্রমাণপত্র</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  ইকামা/ভিসার কপি (প্রবাসীদের জন্য), এমপ্লয়ি আইডি কার্ড, অথবা আপনার উল্লেখিত পেশার স্বপক্ষে প্রমাণপত্র।
-                </p>
-              </div>
-            </div>
-
-            {/* Requirement 4 */}
-            <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-colors group">
-              <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-1 text-base">আবেদনপত্র (Form)</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  পূরণকৃত এবং প্রিন্ট করা ই-পাসপোর্ট আবেদন সামারি। এটি সঠিকভাবে পূরণ করতে আমরা আপনাকে সাহায্য করব।
-                </p>
-              </div>
-            </div>
+            {requirements.map((req) => {
+              const IconComponent = IconMap[req.icon_name] || CheckCircle2;
+              return (
+                <div key={req.id} className={`flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-${req.color}-200 hover:bg-${req.color}-50/50 transition-colors group`}>
+                  <div className={`w-12 h-12 rounded-full bg-${req.color}-100 text-${req.color}-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                    <IconComponent className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 mb-1 text-base">{req.title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      {req.desc_text}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-12 text-center">

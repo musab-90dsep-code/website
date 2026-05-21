@@ -1,50 +1,48 @@
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, FileText, Plane, MapPin, CheckCircle2 } from "lucide-react";
+import { supabase } from "../lib/supabase";
+
+type VisaCountry = { id: string; name: string; type: string; desc_text: string; icon_bg: string; icon_color: string; order_num: number };
 
 export default function VisaApplicationPage({ onBack }: { onBack: () => void }) {
-  const countries = [
-    {
-      name: "সৌদি আরব",
-      type: "কাজের, উমরাহ এবং ভিজিট ভিসা",
-      desc: "আমাদের মাধ্যমে দ্রুত এবং বিশ্বস্ততার সাথে আপনার সৌদি ভিসা প্রসেস করুন। উমরাহ, বিজনেস এবং কাজের ভিসার জন্য সম্পূর্ণ গাইডলাইন ও সহায়তা প্রদান করা হয়।",
-      iconBg: "bg-emerald-100",
-      iconColor: "text-emerald-600"
-    },
-    {
-      name: "সংযুক্ত আরব আমিরাত (ইউএই)",
-      type: "ট্যুরিস্ট এবং বিজনেস ভিসা",
-      desc: "দুবাই এবং সংযুক্ত আরব আমিরাতের ভিসা প্রসেসিং দ্রুততম সময়ে করুন। ট্যুরিস্ট, ট্রানজিট এবং বিজনেস ভ্রমণকারীদের জন্য আদর্শ সার্ভিস।",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600"
-    },
-    {
-      name: "কাতার",
-      type: "ভিজিট এবং কাজের ভিসা",
-      desc: "ঝামেলামুক্ত কাতার ভিসা প্রসেসিং সেবা, যার মধ্যে প্রয়োজনীয় কাগজপত্র সত্যায়ন এবং যথাযথ আবেদন সাবমিশন অন্তর্ভুক্ত রয়েছে।",
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600"
-    },
-    {
-      name: "ওমান",
-      type: "চাকরি এবং ভিজিট ভিসা",
-      desc: "ওমান ভিসার আবেদনের জন্য নিখুঁত প্রফেশনাল সাপোর্ট। আপনার সব প্রয়োজনীয় ডকুমেন্ট সঠিক সময়ে প্রস্তুত করার নিশ্চয়তা।",
-      iconBg: "bg-rose-100",
-      iconColor: "text-rose-600"
-    },
-    {
-      name: "ইউরোপ (সেনজেন)",
-      type: "ট্যুরিস্ট এবং স্টুডেন্ট ভিসা",
-      desc: "ইউরোপ সেনজেন ভিসার জন্য সম্পূর্ণ প্রফেশনাল গাইডলাইন। ভ্রমণ পরিকল্পনা সাজানো, ট্রাভেল ইন্সুরেন্স এবং ফাইল প্রিপারেশনে সাহায্য করা হবে।",
-      iconBg: "bg-indigo-100",
-      iconColor: "text-indigo-600"
-    },
-    {
-      name: "মালয়েশিয়া",
-      type: "ট্যুরিস্ট এবং মেডিকেল ভিসা",
-      desc: "সর্বনিম্ন কাগজপত্রের মাধ্যমে খুব সহজেই মালয়েশিয়ান ই-ভিসা এবং স্টিকার ভিসা প্রসেসিংয়ের নির্ভরযোগ্য সেবা।",
-      iconBg: "bg-amber-100",
-      iconColor: "text-amber-600"
-    }
-  ];
+  const [title, setTitle] = useState("ভিসা আবেদন");
+  const [subtitle, setSubtitle] = useState("আমরা বিশ্বের বিভিন্ন দেশের ভিসা প্রসেসিং করে থাকি। আপনার প্রয়োজনীয় দেশের ভিসা নির্বাচন করুন এবং ঝামেলামুক্ত সেবা উপভোগ করুন।");
+  const [destTitle, setDestTitle] = useState("আমাদের ভিসা গন্তব্যসমূহ");
+  const [destSubtitle, setDestSubtitle] = useState("নিচে উল্লেখিত দেশগুলোর জন্য আমরা অত্যন্ত বিশ্বস্ততার সাথে ভিসা প্রসেসিং করে থাকি।");
+  const [countries, setCountries] = useState<VisaCountry[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const [settingsRes, countriesRes] = await Promise.all([
+        supabase.from("site_settings").select("*"),
+        supabase.from("visa_countries").select("*").order("order_num")
+      ]);
+
+      if (settingsRes.data) {
+        const map: Record<string, string> = {};
+        settingsRes.data.forEach(s => map[s.key] = s.value);
+        if (map.visa_page_title) setTitle(map.visa_page_title);
+        if (map.visa_page_subtitle) setSubtitle(map.visa_page_subtitle);
+        if (map.visa_destinations_title) setDestTitle(map.visa_destinations_title);
+        if (map.visa_destinations_subtitle) setDestSubtitle(map.visa_destinations_subtitle);
+      }
+
+      if (countriesRes.data && countriesRes.data.length > 0) {
+        setCountries(countriesRes.data);
+      } else {
+        // Fallback
+        setCountries([
+          { id: "1", name: "সৌদি আরব", type: "কাজের, উমরাহ এবং ভিজিট ভিসা", desc_text: "আমাদের মাধ্যমে দ্রুত এবং বিশ্বস্ততার সাথে আপনার সৌদি ভিসা প্রসেস করুন। উমরাহ, বিজনেস এবং কাজের ভিসার জন্য সম্পূর্ণ গাইডলাইন ও সহায়তা প্রদান করা হয়।", icon_bg: "bg-emerald-100", icon_color: "text-emerald-600", order_num: 1 },
+          { id: "2", name: "সংযুক্ত আরব আমিরাত (ইউএই)", type: "ট্যুরিস্ট এবং বিজনেস ভিসা", desc_text: "দুবাই এবং সংযুক্ত আরব আমিরাতের ভিসা প্রসেসিং দ্রুততম সময়ে করুন। ট্যুরিস্ট, ট্রানজিট এবং বিজনেস ভ্রমণকারীদের জন্য আদর্শ সার্ভিস।", icon_bg: "bg-blue-100", icon_color: "text-blue-600", order_num: 2 },
+          { id: "3", name: "কাতার", type: "ভিজিট এবং কাজের ভিসা", desc_text: "ঝামেলামুক্ত কাতার ভিসা প্রসেসিং সেবা, যার মধ্যে প্রয়োজনীয় কাগজপত্র সত্যায়ন এবং যথাযথ আবেদন সাবমিশন অন্তর্ভুক্ত রয়েছে।", icon_bg: "bg-purple-100", icon_color: "text-purple-600", order_num: 3 },
+          { id: "4", name: "ওমান", type: "চাকরি এবং ভিজিট ভিসা", desc_text: "ওমান ভিসার আবেদনের জন্য নিখুঁত প্রফেশনাল সাপোর্ট। আপনার সব প্রয়োজনীয় ডকুমেন্ট সঠিক সময়ে প্রস্তুত করার নিশ্চয়তা।", icon_bg: "bg-rose-100", icon_color: "text-rose-600", order_num: 4 },
+          { id: "5", name: "ইউরোপ (সেনজেন)", type: "ট্যুরিস্ট এবং স্টুডেন্ট ভিসা", desc_text: "ইউরোপ সেনজেন ভিসার জন্য সম্পূর্ণ প্রফেশনাল গাইডলাইন। ভ্রমণ পরিকল্পনা সাজানো, ট্রাভেল ইন্সুরেন্স এবং ফাইল প্রিপারেশনে সাহায্য করা হবে।", icon_bg: "bg-indigo-100", icon_color: "text-indigo-600", order_num: 5 },
+          { id: "6", name: "মালয়েশিয়া", type: "ট্যুরিস্ট এবং মেডিকেল ভিসা", desc_text: "সর্বনিম্ন কাগজপত্রের মাধ্যমে খুব সহজেই মালয়েশিয়ান ই-ভিসা এবং স্টিকার ভিসা প্রসেসিংয়ের নির্ভরযোগ্য সেবা।", icon_bg: "bg-amber-100", icon_color: "text-amber-600", order_num: 6 }
+        ]);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
@@ -57,7 +55,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
         </div>
         {/* Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <span className="text-orange-400">ভিসা আবেদন</span>
+          <span className="text-orange-400">{title}</span>
         </div>
         {/* Back Button */}
         <button
@@ -84,10 +82,10 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
             <span>ভিসা প্রসেসিং সার্ভিস</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-display tracking-tight drop-shadow-lg">
-            ভিসা আবেদন
+            {title}
           </h1>
           <p className="mt-4 text-slate-300 font-medium max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-            আমরা বিশ্বের বিভিন্ন দেশের ভিসা প্রসেসিং করে থাকি। আপনার প্রয়োজনীয় দেশের ভিসা নির্বাচন করুন এবং ঝামেলামুক্ত সেবা উপভোগ করুন।
+            {subtitle}
           </p>
         </div>
       </div>
@@ -98,17 +96,17 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
           
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">
-              আমাদের ভিসা গন্তব্যসমূহ
+              {destTitle}
             </h2>
             <p className="text-slate-500 mt-2 text-sm md:text-base">
-              নিচে উল্লেখিত দেশগুলোর জন্য আমরা অত্যন্ত বিশ্বস্ততার সাথে ভিসা প্রসেসিং করে থাকি।
+              {destSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {countries.map((country, idx) => (
-              <div key={idx} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${country.iconBg} ${country.iconColor} group-hover:scale-110 transition-transform`}>
+            {countries.map((country) => (
+              <div key={country.id} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${country.icon_bg} ${country.icon_color} group-hover:scale-110 transition-transform`}>
                   <MapPin className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-1">{country.name}</h3>
@@ -116,7 +114,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
                   {country.type}
                 </div>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  {country.desc}
+                  {country.desc_text}
                 </p>
                 <div className="mt-6 flex items-center gap-2 text-rose-500 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                   বিস্তারিত জানুন <ArrowLeft className="w-4 h-4 rotate-180" />

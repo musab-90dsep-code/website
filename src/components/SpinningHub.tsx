@@ -1,48 +1,71 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useMotionValueEvent, animate } from "motion/react";
-import { Compass, Clock, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
-const wheelSegments = [
-  { id: 0, label: ["Invisible", "to AI"], color: "#1E1B6E" },
-  { id: 1, label: ["#1 answer", "in AI search"], color: "#22C55E" },
-  { id: 2, label: ["Brand not", "mentioned"], color: "#12115A" },
-  { id: 3, label: ["Competitors", "rank first"], color: "#2B2880" },
-  { id: 4, label: ["Not in", "top results"], color: "#3B39A0" },
+type WheelSegment = {
+  id: number;
+  label: string[];
+  color: string;
+};
+
+// ডাটাবেজে কানেক্ট না হলে বা লোড হতে দেরি হলে এই ডিফল্ট লিস্ট কাজ করবে
+const FALLBACK_SEGMENTS: WheelSegment[] = [
+  { id: 0, label: ["10%", "Discount"], color: "#1E1B6E" },
+  { id: 1, label: ["Free", "Consultation"], color: "#22C55E" }, // এই সবুজ ঘরটাই সবসময় জিতবে
+  { id: 2, label: ["VIP", "Support"], color: "#12115A" },
+  { id: 3, label: ["Priority", "Processing"], color: "#2B2880" },
+  { id: 4, label: ["Free Name", "Clearance"], color: "#3B39A0" },
 ];
 
-const SEGMENTS = wheelSegments.length;
-const DEG_PER_SEGMENT = 360 / SEGMENTS;
+type SpinWheelProps = {
+  segments: WheelSegment[];
+  onSpinDone: (idx: number) => void;
+};
 
-function SpinWheel({ onSpinDone }: { onSpinDone: (idx: number) => void }) {
+function SpinWheel({ segments, onSpinDone }: SpinWheelProps) {
   const rotation = useMotionValue(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isBlinking, setIsBlinking] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Every frame: counter-rotate each text element so it stays upright
+  const SEGMENTS_COUNT = segments.length || 5;
+  const DEG_PER_SEGMENT = 360 / SEGMENTS_COUNT;
+
+  // DOM QuerySelector-এর পারফরম্যান্স অপ্টিমাইজেশন
   useMotionValueEvent(rotation, "change", (value) => {
     if (!svgRef.current) return;
-    svgRef.current.querySelectorAll<SVGTextElement>("[data-cx]").forEach((el) => {
+    const texts = svgRef.current.querySelectorAll<SVGTextElement>("[data-cx]");
+    for (let i = 0; i < texts.length; i++) {
+      const el = texts[i];
       const cx = el.getAttribute("data-cx")!;
       const cy = el.getAttribute("data-cy")!;
       el.setAttribute("transform", `rotate(${-value}, ${cx}, ${cy})`);
-    });
+    }
   });
 
   const spin = () => {
-    if (isSpinning) return;
+    if (isSpinning || isBlinking || segments.length === 0) return;
     setIsSpinning(true);
+    setIsBlinking(false);
 
-    const randomIdx = Math.floor(Math.random() * SEGMENTS);
-    const targetAngle = 360 - (randomIdx * DEG_PER_SEGMENT) - (DEG_PER_SEGMENT / 2);
+    // উইনার সবসময় ১ নম্বর ইনডেক্স (সবুজ অংশ) ফিক্সড
+    const targetIdx = 1; 
+    const targetAngle = 360 - (targetIdx * DEG_PER_SEGMENT) - (DEG_PER_SEGMENT / 2);
     const cur = rotation.get();
     const newAngle = cur + 360 * 6 + targetAngle - (cur % 360);
 
     animate(rotation, newAngle, {
       duration: 3.5,
-      ease: "easeOut",
+      ease: [0.25, 0.1, 0.25, 1], // মসৃণ স্টপের জন্য custom easing
       onComplete: () => {
         setIsSpinning(false);
-        onSpinDone(randomIdx);
+        setIsBlinking(true);
+
+        setTimeout(() => {
+          setIsBlinking(false);
+          onSpinDone(targetIdx);
+        }, 1200);
       },
     });
   };
@@ -52,20 +75,23 @@ function SpinWheel({ onSpinDone }: { onSpinDone: (idx: number) => void }) {
       className="relative w-[260px] h-[260px] flex items-center justify-center cursor-pointer select-none"
       onClick={spin}
     >
-      {/* White pointer */}
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-        <div className="w-0 h-0 border-l-[11px] border-r-[11px] border-t-[20px] border-l-transparent border-r-transparent border-t-white drop-shadow-lg" />
-      </div>
+      {/* Blinking Pointer */}
+      <motion.div 
+        className="absolute -top-4 left-1/2 -translate-x-1/2 z-20"
+        animate={isBlinking ? { opacity: [1, 0, 1, 0, 1, 0, 1] } : { opacity: 1 }}
+        transition={{ duration: 1.2, ease: "linear" }}
+      >
+        <div className="w-0 h-0 border-l-[11px] border-r-[11px] border-t-[20px] border-l-transparent border-r-transparent border-t-[#F59E0B] drop-shadow-[0_4px_6px_rgba(245,158,11,0.4)]" />
+      </motion.div>
 
       {/* Dark outer ring */}
       <div className="w-full h-full rounded-full bg-[#0D0D3A] p-[6px] relative shadow-2xl">
-        {/* Rotating wheel using motion value */}
         <motion.div
-          style={{ rotate: rotation, transformOrigin: "center center" }}
-          className="w-full h-full rounded-full overflow-hidden"
+          style={{ rotate: rotation }}
+          className="w-full h-full rounded-full overflow-hidden origin-center"
         >
           <svg ref={svgRef} viewBox="0 0 100 100" className="w-full h-full">
-            {wheelSegments.map((seg, idx) => {
+            {segments.map((seg, idx) => {
               const a = idx * DEG_PER_SEGMENT;
               const radStart = (a - 90) * (Math.PI / 180);
               const radEnd = (a + DEG_PER_SEGMENT - 90) * (Math.PI / 180);
@@ -80,20 +106,19 @@ function SpinWheel({ onSpinDone }: { onSpinDone: (idx: number) => void }) {
               const ty = 50 + 32 * Math.sin(radMid);
 
               return (
-                <g key={idx}>
+                <g key={seg.id || idx}>
                   <path
                     d={`M 50 50 L ${x1} ${y1} A 50 50 0 0 1 ${x2} ${y2} Z`}
                     fill={seg.color}
                     stroke="none"
                   />
-                  {/* data-cx/cy used by useMotionValueEvent to counter-rotate */}
-                  {(seg.label as string[]).map((line, li) => (
+                  {seg.label.map((line, li) => (
                     <text
                       key={li}
                       x={tx}
                       y={ty + li * 5.5 - 2.5}
                       fill="rgba(255,255,255,0.92)"
-                      fontSize="4.8"
+                      fontSize="4.5"
                       fontWeight="bold"
                       textAnchor="middle"
                       data-cx={tx}
@@ -111,14 +136,17 @@ function SpinWheel({ onSpinDone }: { onSpinDone: (idx: number) => void }) {
         </motion.div>
 
         {/* Center dot */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#0D0D3A] rounded-full border-2 border-[#22C55E] flex items-center justify-center z-10 pointer-events-none shadow-lg">
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#0D0D3A] rounded-full border-2 border-[#22C55E] flex items-center justify-center z-10 pointer-events-none shadow-lg"
+          animate={isBlinking ? { scale: [1, 1.1, 1, 1.1, 1], borderColor: ["#22C55E", "#F59E0B", "#22C55E"] } : { scale: 1 }}
+          transition={{ duration: 1.2 }}
+        >
           <div className="w-3 h-3 rounded-full bg-[#22C55E] opacity-90" />
-        </div>
+        </motion.div>
       </div>
 
-      {/* Click hint */}
-      {!isSpinning && (
-        <div className="absolute bottom-[-28px] text-xs text-slate-400 font-semibold tracking-widest uppercase">
+      {!isSpinning && !isBlinking && (
+        <div className="absolute bottom-[-28px] text-xs text-slate-400 font-semibold tracking-widest uppercase animate-pulse">
           Click to spin
         </div>
       )}
@@ -126,119 +154,209 @@ function SpinWheel({ onSpinDone }: { onSpinDone: (idx: number) => void }) {
   );
 }
 
-
-const serviceItems = [
-  "Strict Engagement Filters",
-  "Negotiation Scripts Pack",
-  "Tracking Link System",
-  "Deliverables Matrix Setup",
+const fallbackTradingServices = [
+  "Mother Company Setup", "Name Clearance", "Investment Licences (MISA)", "SBC Approved",
+  "Commercial Registration (CR)", "Muqeem Portal Registration", "Qiwa Portal Registration", "Chamber of Commerce",
 ];
 
-function ServiceCard({ segIdx }: { segIdx: number | null }) {
+const fallbackServiceServices = [
+  "VAT / Zakat Registration", "National Address (SPL)", "Business Bank Account", "Mudad Account Registration"
+];
+
+function ServiceCard({ segIdx, type }: { segIdx: number | null; type: "trading" | "service" }) {
+  const [consultancyServices, setConsultancyServices] = useState<string[]>(type === "trading" ? fallbackTradingServices : fallbackServiceServices);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('name')
+          .eq('type', type)
+          .order('order_num', { ascending: true });
+        if (isMounted && data && data.length > 0) {
+          setConsultancyServices(data.map(s => s.name));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchServices();
+    return () => { isMounted = false; };
+  }, [type]);
+
   return (
     <AnimatePresence>
       {segIdx !== null && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="w-full max-w-[300px] text-left mt-10 space-y-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full max-w-[320px] text-left mt-8 relative"
         >
-          {/* Header row */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0, duration: 0.4, ease: "easeOut" }}
-            className="flex gap-3 items-center"
-          >
-            <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] text-[#EA580C] flex flex-shrink-0 items-center justify-center border border-[#FFEDD5]">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-[14px] font-extrabold text-[#0F172A] leading-tight font-sans">
-                Micro-Influencer Map Matrix
-              </h4>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-[#F97316] font-bold text-[12px]">$300 - $500</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-[#64748B] flex items-center gap-1 uppercase tracking-widest text-[8px] font-bold">
-                  <Clock className="w-3 h-3" /> 4 BUSINESS DAYS
-                </span>
-              </div>
-            </div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-5">
+            <h4 className="text-[14px] font-black text-slate-900 uppercase tracking-widest font-display mb-1">Included Services</h4>
+            <p className="text-[10px] text-slate-500 font-medium">Everything you need for full corporate compliance</p>
           </motion.div>
 
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4, ease: "easeOut" }}
-            className="text-[10px] italic text-[#64748B] leading-relaxed"
-          >
-            Sourcing and mapping 20 perfectly matching micro-influencers with active, targeted audiences.
-          </motion.p>
-
-          {/* Service items — one by one with 0.5s gap */}
-          <div className="space-y-2">
-            {serviceItems.map((item, i) => (
+          <div className="space-y-3">
+            {consultancyServices.map((item, i) => (
               <motion.div
                 key={item}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.0 + i * 0.5, duration: 0.4, ease: "easeOut" }}
-                className="flex items-start gap-2 text-[11px] text-[#475569] font-medium"
+                transition={{ delay: i * 0.1, duration: 0.4, ease: "rose" }}
+                className="flex items-start gap-2.5"
               >
-                <Check className="w-3.5 h-3.5 text-[#F97316] flex-shrink-0 mt-0.5" />
-                <span>{item}</span>
+                <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </div>
+                <span className="text-[11px] text-slate-700 font-bold leading-tight">{item}</span>
               </motion.div>
             ))}
           </div>
 
-          {/* Book Now button — appears last */}
-          <motion.button
-            initial={{ opacity: 0, y: 12 }}
+          <motion.a
+            href="https://wa.me/966501112222?text=Hello%21%20I%20am%20interested%20in%20your%20business%20consultancy%20and%20investor%20licensing%20services."
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 + serviceItems.length * 0.5, duration: 0.4, ease: "easeOut" }}
-            className="w-full py-3 bg-[#0F172A] text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-slate-700 transition-colors shadow-sm cursor-pointer mt-1"
+            className="w-full block text-center mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-md no-underline"
           >
             BOOK NOW
-          </motion.button>
+          </motion.a>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
 
-
 export default function SpinningHub({ onRewardWon }: { onRewardWon?: (reward: string) => void }) {
+  const [segments1, setSegments1] = useState<WheelSegment[]>(FALLBACK_SEGMENTS);
+  const [segments2, setSegments2] = useState<WheelSegment[]>(FALLBACK_SEGMENTS);
   const [landed1, setLanded1] = useState<number | null>(null);
   const [landed2, setLanded2] = useState<number | null>(null);
 
+  useEffect(() => {
+    const fetchWheelConfig = async () => {
+      try {
+        // ১. চাকার বেসিক কনফিগারেশন লোড করা
+        const { data: wheelData, error: wheelError } = await supabase
+          .from("wheel_config")
+          .select("*")
+          .order("order_num", { ascending: true });
+
+        // If the table doesn't exist, we just ignore it and use fallback
+
+        // ২. সাইট সেটিংস থেকে অ্যাডমিনের দেওয়া কাস্টম উইনার লেবেল লোড করা
+        const { data: settingsData } = await supabase
+          .from("site_settings")
+          .select("*")
+          .in("key", ["wheel1_winner_line1", "wheel1_winner_line2", "wheel2_winner_line1", "wheel2_winner_line2"]);
+
+        // সেটিংস ডাটাকে সহজে পড়ার জন্য অবজেক্টে রূপান্তর
+        const customWinner: Record<string, string> = {};
+        settingsData?.forEach(item => {
+          customWinner[item.key] = item.value;
+        });
+
+        if (wheelData && wheelData.length > 0) {
+          const formattedSegments1 = wheelData.map((item: any, idx: number) => {
+            // যদি ইনডেক্স ১ (সবুজ অংশ) হয় এবং অ্যাডমিন প্যানেল থেকে লেখা চেঞ্জ করা থাকে
+            if (idx === 1 && (customWinner.wheel1_winner_line1 || customWinner.wheel1_winner_line2)) {
+              return {
+                id: item.id,
+                label: [customWinner.wheel1_winner_line1, customWinner.wheel1_winner_line2].filter(Boolean),
+                color: item.color
+              };
+            }
+            return {
+              id: item.id,
+              label: [item.label_line1, item.label_line2].filter(Boolean),
+              color: item.color
+            };
+          });
+          
+          const formattedSegments2 = wheelData.map((item: any, idx: number) => {
+            // যদি ইনডেক্স ১ (সবুজ অংশ) হয় এবং অ্যাডমিন প্যানেল থেকে লেখা চেঞ্জ করা থাকে
+            if (idx === 1 && (customWinner.wheel2_winner_line1 || customWinner.wheel2_winner_line2)) {
+              return {
+                id: item.id,
+                label: [customWinner.wheel2_winner_line1, customWinner.wheel2_winner_line2].filter(Boolean),
+                color: item.color
+              };
+            }
+            return {
+              id: item.id,
+              label: [item.label_line1, item.label_line2].filter(Boolean),
+              color: item.color
+            };
+          });
+          
+          setSegments1(formattedSegments1);
+          setSegments2(formattedSegments2);
+        } else {
+          // যদি wheel_config টেবিল ফাকা থাকে কিন্তু অ্যাডমিন প্যানেলের সাইট টেক্সট থাকে, তবে ফলব্যাক লিস্ট আপডেট করা
+          setSegments1(prev => prev.map((seg, idx) => idx === 1 && (customWinner.wheel1_winner_line1 || customWinner.wheel1_winner_line2) ? {
+            ...seg,
+            label: [customWinner.wheel1_winner_line1, customWinner.wheel1_winner_line2].filter(Boolean)
+          } : seg));
+          
+          setSegments2(prev => prev.map((seg, idx) => idx === 1 && (customWinner.wheel2_winner_line1 || customWinner.wheel2_winner_line2) ? {
+            ...seg,
+            label: [customWinner.wheel2_winner_line1, customWinner.wheel2_winner_line2].filter(Boolean)
+          } : seg));
+        }
+      } catch (err) {
+        console.error("Error fetching wheel configuration:", err);
+      }
+    };
+
+    fetchWheelConfig();
+  }, []);
+
   return (
     <div className="w-full flex items-start justify-center py-10 px-4 relative">
-      {/* Centered Logo */}
       <div className="absolute -top-10 md:-top-12 left-1/2 -translate-x-1/2 z-30">
         <img src="/logo.png" alt="Logo" className="h-40 md:h-48 w-auto object-contain drop-shadow-md" />
       </div>
 
       <div className="flex flex-col md:flex-row gap-16 md:gap-40 lg:gap-56 items-center md:items-start justify-center mt-16 relative w-full max-w-7xl mx-auto">
-
+        
         {/* Wheel 1 */}
         <div className="flex flex-col items-center">
-          <SpinWheel onSpinDone={(idx) => {
-            setLanded1(idx);
-            onRewardWon?.(wheelSegments[idx].label.join(" "));
-          }} />
-          <ServiceCard segIdx={landed1} />
+          <SpinWheel 
+            segments={segments1} 
+            onSpinDone={(idx) => {
+              setLanded1(idx);
+              onRewardWon?.(segments1[idx].label.join(" "));
+            }} 
+          />
+          <div className="mt-12 px-6 py-2 rounded-2xl bg-gradient-to-r from-rose-50 to-orange-50 border-2 border-orange-100 shadow-sm text-center hover:scale-105 transition-transform duration-300">
+            <span className="text-[13px] font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-orange-600 uppercase font-display">
+              Investor Trading Licence
+            </span>
+          </div>
+          <ServiceCard segIdx={landed1} type="trading" />
         </div>
 
         {/* Wheel 2 */}
         <div className="flex flex-col items-center">
-          <SpinWheel onSpinDone={(idx) => {
-            setLanded2(idx);
-            onRewardWon?.(wheelSegments[idx].label.join(" "));
-          }} />
-          <ServiceCard segIdx={landed2} />
+          <SpinWheel 
+            segments={segments2} 
+            onSpinDone={(idx) => {
+              setLanded2(idx);
+              onRewardWon?.(segments2[idx].label.join(" "));
+            }} 
+          />
+          <div className="mt-12 px-6 py-2 rounded-2xl bg-gradient-to-r from-teal-50 to-indigo-50 border-2 border-teal-100 shadow-sm text-center hover:scale-105 transition-transform duration-300">
+            <span className="text-[13px] font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-indigo-600 uppercase font-display">
+              Investor Service Licence
+            </span>
+          </div>
+          <ServiceCard segIdx={landed2} type="service" />
         </div>
 
       </div>
