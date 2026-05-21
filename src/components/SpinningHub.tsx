@@ -204,14 +204,19 @@ function ServiceCard({ segIdx, type }: { segIdx: number | null; type: "trading" 
             {consultancyServices.map((item, i) => (
               <motion.div
                 key={item}
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.4, ease: "rose" }}
+                transition={{ delay: 0.5 + i * 0.35, duration: 0.5, ease: "easeOut" }}
                 className="flex items-start gap-2.5"
               >
-                <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5 + i * 0.35 + 0.15, duration: 0.3, type: "spring", stiffness: 200 }}
+                  className="mt-0.5 w-4 h-4 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0"
+                >
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
-                </div>
+                </motion.div>
                 <span className="text-[11px] text-slate-700 font-bold leading-tight">{item}</span>
               </motion.div>
             ))}
@@ -223,6 +228,7 @@ function ServiceCard({ segIdx, type }: { segIdx: number | null; type: "trading" 
             rel="noopener noreferrer"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 + consultancyServices.length * 0.35 + 0.3, duration: 0.5 }}
             className="w-full block text-center mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-md no-underline"
           >
             BOOK NOW
