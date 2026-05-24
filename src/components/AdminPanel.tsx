@@ -9,7 +9,7 @@ import {
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Lead = { id: string; name: string; requirement: string; status: string; created_at: string };
 type Service = { id: string; name: string; order_num: number; type: string };
-type Review = { id: string; name: string; location: string; avatar_letter: string; color_class: string; rating: number; review_text: string; service_received: string; created_at: string };
+type Review = { id: string; name: string; location: string; avatar_letter: string; color_class: string; rating: number; review_text: string; service_received: string; created_at: string; avatar_image_url?: string };
 type FeatureCard = { id: string; title: string; description: string; icon_name: string; color: string; order_num: number };
 type Setting = { key: string; value: string; label: string; group_name: string };
 type EPassportRequirement = { id: string; title: string; desc_text: string; icon_name: string; color: string; order_num: number };
@@ -69,7 +69,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const [visaCountries, setVisaCountries] = useState<VisaCountry[]>([]);
 
   // Form states
-  const [newReview, setNewReview] = useState({ name: "", location: "Jeddah", avatar_letter: "", rating: 5, review_text: "", service_received: "", color_class: "bg-teal-500" });
+  const [newReview, setNewReview] = useState({ name: "", location: "Jeddah", avatar_letter: "", rating: 5, review_text: "", service_received: "", color_class: "bg-teal-500", avatar_image_url: "" });
   const [newServiceName, setNewServiceName] = useState("");
   const [newServiceType, setNewServiceType] = useState("trading");
   const [newCard, setNewCard] = useState({ title: "", description: "", icon_name: "FileText", color: "rose", order_num: 0 });
@@ -152,16 +152,81 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   // ── Reviews ───────────────────────────────────────────────────────────────
   const addReview = async (e: FormEvent) => {
     e.preventDefault();
-    const avatarLetter = newReview.avatar_letter || newReview.name.charAt(0).toUpperCase();
-    await supabase.from("reviews").insert([{ ...newReview, avatar_letter: avatarLetter }]);
-    setNewReview({ name: "", location: "Jeddah", avatar_letter: "", rating: 5, review_text: "", service_received: "", color_class: "bg-teal-500" });
+    const isUrl = newReview.avatar_image_url && (newReview.avatar_image_url.startsWith("http") || newReview.avatar_image_url.startsWith("/"));
+    const avatarLetter = isUrl ? newReview.avatar_image_url : (newReview.avatar_letter || newReview.name.charAt(0).toUpperCase());
+    
+    try {
+      // Try with avatar_image_url column
+      const { error } = await supabase.from("reviews").insert([{ 
+        name: newReview.name,
+        location: newReview.location,
+        rating: newReview.rating,
+        review_text: newReview.review_text,
+        service_received: newReview.service_received,
+        color_class: newReview.color_class,
+        avatar_letter: avatarLetter,
+        avatar_image_url: newReview.avatar_image_url || null
+      }]);
+      
+      if (error) {
+        // Fallback: retry without avatar_image_url
+        console.warn("Retrying insert without avatar_image_url column...", error);
+        const { error: retryErr } = await supabase.from("reviews").insert([{ 
+          name: newReview.name,
+          location: newReview.location,
+          rating: newReview.rating,
+          review_text: newReview.review_text,
+          service_received: newReview.service_received,
+          color_class: newReview.color_class,
+          avatar_letter: avatarLetter
+        }]);
+        if (retryErr) throw retryErr;
+      }
+    } catch (err) {
+      console.error("Failed to add review", err);
+    }
+
+    setNewReview({ name: "", location: "Jeddah", avatar_letter: "", rating: 5, review_text: "", service_received: "", color_class: "bg-teal-500", avatar_image_url: "" });
     fetchAll();
     showToast("Review added");
   };
   const updateReview = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingReview) return;
-    await supabase.from("reviews").update(editingReview).eq("id", editingReview.id);
+    const isUrl = editingReview.avatar_image_url && (editingReview.avatar_image_url.startsWith("http") || editingReview.avatar_image_url.startsWith("/"));
+    const avatarLetter = isUrl ? editingReview.avatar_image_url : (editingReview.avatar_letter || editingReview.name.charAt(0).toUpperCase());
+    
+    try {
+      // Try with avatar_image_url column
+      const { error } = await supabase.from("reviews").update({
+        name: editingReview.name,
+        location: editingReview.location,
+        rating: editingReview.rating,
+        review_text: editingReview.review_text,
+        service_received: editingReview.service_received,
+        color_class: editingReview.color_class,
+        avatar_letter: avatarLetter,
+        avatar_image_url: editingReview.avatar_image_url || null
+      }).eq("id", editingReview.id);
+      
+      if (error) {
+        // Fallback: retry without avatar_image_url
+        console.warn("Retrying update without avatar_image_url column...", error);
+        const { error: retryErr } = await supabase.from("reviews").update({
+          name: editingReview.name,
+          location: editingReview.location,
+          rating: editingReview.rating,
+          review_text: editingReview.review_text,
+          service_received: editingReview.service_received,
+          color_class: editingReview.color_class,
+          avatar_letter: avatarLetter
+        }).eq("id", editingReview.id);
+        if (retryErr) throw retryErr;
+      }
+    } catch (err) {
+      console.error("Failed to update review", err);
+    }
+
     setEditingReview(null);
     fetchAll();
     showToast("Review updated");
@@ -226,6 +291,30 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     // আপডেট হওয়ার পর লোকাল স্টেট রিফ্রেশ করা যাতে অন্য ট্যাবেও ডাটা সিঙ্ক থাকে
     setSettings(prev => ({ ...prev, [key]: value }));
     showToast("Saved successfully!");
+  };
+
+  const handleReviewPhotoUpload = async (e: ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `client_review_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("images").getPublicUrl(fileName);
+      
+      if (isEdit) {
+        setEditingReview(p => p ? { ...p, avatar_image_url: publicUrl } : null);
+      } else {
+        setNewReview(p => ({ ...p, avatar_image_url: publicUrl }));
+      }
+      showToast("Client photo uploaded successfully!");
+    } catch (err: any) {
+      showToast(err.message || "Photo upload failed", "error");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -634,6 +723,34 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </select>
                   </div>
                   <div className="md:col-span-2">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Client Photo</label>
+                    <div className="flex items-center gap-3">
+                      {newReview.avatar_image_url ? (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border border-slate-200 group">
+                          <img src={newReview.avatar_image_url} alt="Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setNewReview(p => ({ ...p, avatar_image_url: "" }))}
+                            className="absolute inset-0 bg-black/60 text-white font-bold text-[9px] uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center border border-dashed border-slate-300 text-slate-400 font-mono text-[9px]">
+                          No Photo
+                        </div>
+                      )}
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
+                        <Upload className="w-3 h-3" />
+                        {isUploading ? "Uploading..." : "Upload Photo"}
+                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleReviewPhotoUpload(e, false)} className="hidden" />
+                      </label>
+                      <span className="text-[10px] text-slate-400">or</span>
+                      <input type="text" value={newReview.avatar_image_url} onChange={e => setNewReview(p => ({ ...p, avatar_image_url: e.target.value }))} className="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500" placeholder="Paste image link here..." />
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Review Text *</label>
                     <textarea required rows={3} value={newReview.review_text} onChange={e => setNewReview(p => ({ ...p, review_text: e.target.value }))} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-rose-500 resize-none" placeholder="Write the client's testimonial…" />
                   </div>
@@ -666,6 +783,34 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </select>
                   </div>
                   <div className="md:col-span-2">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Client Photo</label>
+                    <div className="flex items-center gap-3">
+                      {editingReview.avatar_image_url ? (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border border-slate-200 group">
+                          <img src={editingReview.avatar_image_url} alt="Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setEditingReview(p => p ? { ...p, avatar_image_url: "" } : null)}
+                            className="absolute inset-0 bg-black/60 text-white font-bold text-[9px] uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center border border-dashed border-slate-300 text-slate-400 font-mono text-[9px]">
+                          No Photo
+                        </div>
+                      )}
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
+                        <Upload className="w-3 h-3" />
+                        {isUploading ? "Uploading..." : "Upload Photo"}
+                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleReviewPhotoUpload(e, true)} className="hidden" />
+                      </label>
+                      <span className="text-[10px] text-slate-400">or</span>
+                      <input type="text" value={editingReview.avatar_image_url || ""} onChange={e => setEditingReview(p => p ? { ...p, avatar_image_url: e.target.value } : null)} className="flex-1 text-xs border border-rose-300 rounded-lg px-3 py-1.5 focus:outline-none" placeholder="Paste image link here..." />
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Review Text</label>
                     <textarea rows={3} value={editingReview.review_text} onChange={e => setEditingReview(p => p ? { ...p, review_text: e.target.value } : null)} className="w-full text-sm border border-rose-300 rounded-xl px-3 py-2 focus:outline-none resize-none" />
                   </div>
@@ -684,7 +829,13 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
               <div className="space-y-3">
                 {reviews.map(r => (
                   <div key={r.id} className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <div className={`w-10 h-10 rounded-full ${r.color_class} flex items-center justify-center text-white font-black text-sm shrink-0`}>{r.avatar_letter}</div>
+                    {r.avatar_image_url || (r.avatar_letter && (r.avatar_letter.startsWith("http") || r.avatar_letter.startsWith("/"))) ? (
+                      <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                        <img src={r.avatar_image_url || r.avatar_letter} alt={r.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className={`w-10 h-10 rounded-full ${r.color_class} flex items-center justify-center text-white font-black text-sm shrink-0`}>{r.avatar_letter}</div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-black text-slate-900 text-sm">{r.name}</span>
@@ -962,11 +1113,10 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </div>
                   </div>
 
-                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
-                    heroPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
-                  }`}>
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${heroPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                    }`}>
                     <img src={settings.hero_image_url} alt="Current hero" className="w-full h-full object-cover object-center opacity-70" />
-                    
+
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
                       <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>
@@ -1081,11 +1231,10 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </div>
                   </div>
 
-                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
-                    passportPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
-                  }`}>
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${passportPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                    }`}>
                     <img src={settings.passport_cover_image_url || "/epassport_cover.png"} alt="Passport cover" className="w-full h-full object-cover object-center opacity-60" />
-                    
+
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
                       <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>
@@ -1159,11 +1308,10 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </div>
                   </div>
 
-                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
-                    visaPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
-                  }`}>
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${visaPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                    }`}>
                     <img src={settings.visa_cover_image_url || "/epassport_cover.png"} alt="Visa cover" className="w-full h-full object-cover object-center opacity-60" />
-                    
+
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
                       <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>

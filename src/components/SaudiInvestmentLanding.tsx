@@ -18,8 +18,9 @@ type FeatureCard = { id: string; title: string; description: string; icon_name: 
 const DEFAULT_SETTINGS: Record<string, string> = {
   hero_image_url: "/image.png",
   hero_badge_text: "Saudi Business Consultancy",
-  hero_title_line1: "AL NAZIM",
-  hero_title_line2: "TRAVELS.",
+  hero_title_line1: "Saudi Business",
+  hero_title_line2: "Consultancy",
+  hero_title_line3: "AL NASEEM TRAVELS",
   hero_location: "Jeddah · Saudi Arabia",
   hero_tagline: "Your trusted partner for premium corporate setup, investor licensing, fast e-passports, and comprehensive visa services.",
   hero_cta_button: "Contact Our Experts",
@@ -314,19 +315,19 @@ export default function SaudiInvestmentLanding({
               </div>
             </div>
             <div className="flex-1 space-y-3">
-              <input 
-                type="text" 
-                placeholder="Your Name" 
+              <input
+                type="text"
+                placeholder="Your Name"
                 value={queryName}
                 onChange={e => setQueryName(e.target.value)}
-                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" 
+                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500"
               />
-              <input 
-                type="tel" 
-                placeholder="Phone Number" 
+              <input
+                type="tel"
+                placeholder="Phone Number"
                 value={queryPhone}
                 onChange={e => setQueryPhone(e.target.value)}
-                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" 
+                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500"
               />
               <a
                 href={`https://wa.me/${s("contact_whatsapp").replace(/\D/g, "")}?text=${encodeURIComponent(

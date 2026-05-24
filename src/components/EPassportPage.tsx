@@ -85,7 +85,7 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
         if (map.epassport_page_subtitle) setSubtitle(map.epassport_page_subtitle);
         if (map.epassport_req_title) setReqTitle(map.epassport_req_title);
         if (map.epassport_req_subtitle) setReqSubtitle(map.epassport_req_subtitle);
-        
+
         const wpNum = map.passport_whatsapp || map.contact_whatsapp || "966598327617";
         const cleanNum = wpNum.replace(/\D/g, "");
         setWhatsappLink(`https://wa.me/${cleanNum}?text=Hello!%20I%20want%20to%20apply%20for%20an%20E-Passport.`);
@@ -189,7 +189,7 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="mt-12 text-center border-b border-slate-100 pb-12">
-            <button 
+            <button
               onClick={() => setShowQuoteModal(true)}
               className="bg-rose-500 text-white px-8 py-4 rounded-xl hover:bg-rose-600 transition-all font-display font-black text-sm tracking-widest shadow-xl shadow-rose-500/30 hover:scale-105 inline-flex items-center gap-2 no-underline cursor-pointer border-0"
             >
@@ -244,19 +244,19 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
               <div className="flex-1 space-y-3">
-                <input 
-                  type="text" 
-                  placeholder="Your Name" 
+                <input
+                  type="text"
+                  placeholder="Your Name"
                   value={queryName}
                   onChange={e => setQueryName(e.target.value)}
-                  className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500" 
+                  className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
-                <input 
-                  type="tel" 
-                  placeholder="Phone Number" 
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
                   value={queryPhone}
                   onChange={e => setQueryPhone(e.target.value)}
-                  className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500" 
+                  className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
                 <a
                   href={getEPassportQueryWhatsapp()}

@@ -12,6 +12,7 @@ type Review = {
   rating: number;
   review_text: string;
   service_received: string;
+  avatar_image_url?: string;
 };
 
 const FALLBACK_REVIEWS: Review[] = [
@@ -29,7 +30,7 @@ export default function HappyClientsHub() {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5 });
+  const [form, setForm] = useState({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5, avatar_image_url: "" });
 
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -93,17 +94,42 @@ export default function HappyClientsHub() {
     if (!form.name || !form.review_text) return;
     setSubmitting(true);
 
-    const avatar_letter = form.name.trim().split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    const isUrl = form.avatar_image_url && (form.avatar_image_url.startsWith("http") || form.avatar_image_url.startsWith("/"));
+    const avatar_letter = isUrl ? form.avatar_image_url : form.name.trim().split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
     try {
+      // Try to insert with avatar_image_url first
       const { error } = await supabase
         .from("reviews")
-        .insert([{ ...form, avatar_letter }])
-        .select();
+        .insert([{ 
+          name: form.name, 
+          location: form.location, 
+          review_text: form.review_text, 
+          service_received: form.service_received, 
+          color_class: form.color_class, 
+          rating: form.rating,
+          avatar_letter: avatar_letter,
+          avatar_image_url: form.avatar_image_url || null
+        }]);
 
-      if (error) throw error;
+      if (error) {
+        // Fallback: If it failed because the column doesn't exist yet, retry without that column
+        console.warn("Retrying insert without avatar_image_url column...", error);
+        const { error: retryError } = await supabase
+          .from("reviews")
+          .insert([{ 
+            name: form.name, 
+            location: form.location, 
+            review_text: form.review_text, 
+            service_received: form.service_received, 
+            color_class: form.color_class, 
+            rating: form.rating,
+            avatar_letter: avatar_letter
+          }]);
+        if (retryError) throw retryError;
+      }
 
-      setForm({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5 });
+      setForm({ name: "", location: "Jeddah", review_text: "", service_received: "E-Passport Application", color_class: "bg-teal-500", rating: 5, avatar_image_url: "" });
       setShowAddForm(false);
       await fetchReviews();
     } catch (err) {
@@ -141,11 +167,21 @@ export default function HappyClientsHub() {
               </div>
 
               {/* Avatar Overlap */}
-              <div className={`absolute -top-10 h-20 w-20 rounded-full ${review.color_class || 'bg-indigo-100'} ring-[6px] ring-white flex items-center justify-center shadow-md`}>
-                <span className="text-xl font-bold font-display uppercase tracking-wider text-white">
-                  {review.avatar_letter}
-                </span>
-              </div>
+              {review.avatar_image_url || (review.avatar_letter && (review.avatar_letter.startsWith("http") || review.avatar_letter.startsWith("/"))) ? (
+                <div className="absolute -top-10 h-20 w-20 rounded-full overflow-hidden ring-[6px] ring-white bg-slate-100 flex items-center justify-center shadow-md">
+                  <img 
+                    src={review.avatar_image_url || review.avatar_letter} 
+                    alt={review.name} 
+                    className="h-full w-full object-cover" 
+                  />
+                </div>
+              ) : (
+                <div className={`absolute -top-10 h-20 w-20 rounded-full ${review.color_class || 'bg-indigo-100'} ring-[6px] ring-white flex items-center justify-center shadow-md`}>
+                  <span className="text-xl font-bold font-display uppercase tracking-wider text-white">
+                    {review.avatar_letter}
+                  </span>
+                </div>
+              )}
 
               {/* Card Content */}
               <div className="mt-10 flex flex-col items-center text-center w-full">
@@ -212,6 +248,15 @@ export default function HappyClientsHub() {
                   <select value={form.color_class} onChange={e => setForm({ ...form, color_class: e.target.value })} className="w-full text-xs px-3 py-2 border rounded-lg">
                     {COLOR_OPTIONS.map(c => <option key={c} value={c}>{c.replace('bg-', '').replace('-500', '')}</option>)}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-1">
+                  <input 
+                    placeholder="Client Photo URL (optional) - e.g., https://example.com/pic.jpg" 
+                    value={form.avatar_image_url} 
+                    onChange={e => setForm({ ...form, avatar_image_url: e.target.value })} 
+                    className="w-full text-xs px-3 py-2 border rounded-lg focus:outline-none focus:border-rose-500" 
+                  />
                 </div>
 
                 <textarea required placeholder="Write review here..." value={form.review_text} onChange={e => setForm({ ...form, review_text: e.target.value })} rows={3} className="w-full text-xs px-3 py-2 border rounded-lg" />
