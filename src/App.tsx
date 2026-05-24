@@ -55,11 +55,31 @@ export default function App() {
     e.preventDefault();
     setConsultSubmitted(true);
 
-    // Save to Supabase
+    // 1. Save to Supabase
     try {
       await supabase.from("leads").insert([{ name: consultName, requirement: consultDetail }]);
     } catch (err) {
       console.error("Failed to insert lead", err);
+    }
+
+    // 2. Dispatch Email Notification
+    try {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "email_notification_key").single();
+      if (data && data.value) {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: data.value,
+            subject: `New Live Consultation Request - ${consultName}`,
+            from_name: "Al Naseem Travels Hub",
+            name: consultName,
+            message: `Client ${consultName} has requested a Live Consultation. Details: "${consultDetail}".`
+          })
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send consult email", err);
     }
 
     setTimeout(() => {

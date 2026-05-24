@@ -266,6 +266,47 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `logo_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("images").getPublicUrl(fileName);
+      await supabase.from("site_settings").upsert({ key: "brand_logo_image_url", value: publicUrl }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, brand_logo_image_url: publicUrl }));
+      showToast("Brand logo image updated successfully!");
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!confirm("Are you sure you want to delete the logo image and reset to the text/letter logo?")) return;
+    setIsUploading(true);
+    try {
+      const currentUrl = settings.brand_logo_image_url || "";
+      if (currentUrl.includes("supabase") && currentUrl.includes("/images/")) {
+        const parts = currentUrl.split("/images/");
+        if (parts[1]) {
+          await supabase.storage.from("images").remove([parts[1]]);
+        }
+      }
+      await supabase.from("site_settings").upsert({ key: "brand_logo_image_url", value: "" }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, brand_logo_image_url: "" }));
+      showToast("Logo image reset to default text/letter logo!");
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // ── Login Screen ──────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
@@ -305,10 +346,10 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   ];
 
   const heroKeys = ["hero_badge_text", "hero_title_line1", "hero_title_line2", "hero_location", "hero_tagline", "hero_cta_button"];
-  const brandKeys = ["brand_name", "brand_sub", "footer_company_name", "footer_copyright"];
+  const brandKeys = ["brand_name", "brand_sub", "brand_logo_text", "footer_company_name", "footer_copyright"];
   const aboutKeys = ["why_choose_title", "why_choose_para1", "why_choose_para2"];
   const servicesSectionKeys = ["services_section_title", "services_section_subtitle", "testimonials_section_title", "testimonials_section_subtitle"];
-  const contactKeys = ["contact_phone", "contact_email", "contact_address", "contact_whatsapp"];
+  const contactKeys = ["contact_phone", "contact_email", "contact_address", "contact_whatsapp", "email_notification_key"];
   
   // চাকার জন্য নতুন কী ডেফিনিশন গ্রুপ
   const wheelKeys = ["wheel_winner_line1", "wheel_winner_line2"];
@@ -782,11 +823,31 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
 
         {/* ── CONTACT TAB ───────────────────────────────────────────────── */}
         {activeTab === "contact" && (
-          <SectionCard title="Contact Information">
-            <div className="space-y-5">
-              {contactKeys.map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
-            </div>
-          </SectionCard>
+          <div className="space-y-6">
+            <SectionCard title="Main Landing Page - Live Query Desk">
+              <div className="space-y-5">
+                {["contact_phone", "contact_email", "contact_address", "contact_whatsapp"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
+              </div>
+            </SectionCard>
+
+            <SectionCard title="E-Passport Page - Live Query Desk">
+              <div className="space-y-5">
+                {["passport_contact_title", "passport_contact_subtitle", "passport_contact_phone", "passport_contact_email", "passport_contact_address", "passport_whatsapp"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Visa Page - Live Query Desk">
+              <div className="space-y-5">
+                {["visa_contact_title", "visa_contact_subtitle", "visa_contact_phone", "visa_contact_email", "visa_contact_address", "visa_whatsapp"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Form Email Notifications">
+              <div className="space-y-5">
+                {["email_notification_key"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
+              </div>
+            </SectionCard>
+          </div>
         )}
 
         {/* ── MEDIA TAB ─────────────────────────────────────────────────── */}
@@ -829,6 +890,51 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete Current Image &amp; Reset to Default
               </button>
+            </SectionCard>
+
+            <SectionCard title="Brand Logo Image">
+              <p className="text-xs text-slate-500 mb-4">Upload a custom logo image (PNG with transparency is highly recommended). If uploaded, it will replace the default text/letter icon in the navigation bar.</p>
+
+              {settings.brand_logo_image_url ? (
+                <div className="mb-4 rounded-xl overflow-hidden bg-slate-900/10 p-4 flex flex-col items-center justify-center relative group min-h-[100px] border border-slate-200">
+                  <img src={settings.brand_logo_image_url} alt="Current Logo" className="h-12 object-contain bg-slate-950/20 p-2 rounded-xl" />
+                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all flex items-center justify-center">
+                    <button
+                      onClick={handleLogoDelete}
+                      disabled={isUploading}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl hover:bg-red-600 shadow-lg"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete & Reset to Text Logo
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-2 font-mono truncate max-w-full">{settings.brand_logo_image_url}</p>
+                </div>
+              ) : (
+                <div className="mb-4 rounded-xl bg-slate-100 p-4 text-center text-xs text-slate-400 font-bold">
+                  Using default text/letter logo: <span className="text-rose-500">"{settings.brand_logo_text || "A"}"</span>
+                </div>
+              )}
+
+              {/* Upload Logo area */}
+              <label className={`flex flex-col items-center gap-3 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isUploading ? "border-rose-300 bg-rose-50" : "border-slate-300 hover:border-rose-400 hover:bg-rose-50/40"}`}>
+                <Upload className={`w-8 h-8 ${isUploading ? "text-rose-500 animate-bounce" : "text-slate-400"}`} />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new logo image"}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">PNG, JPG, SVG, WEBP supported (transparent background is best)</p>
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isUploading} />
+              </label>
+
+              {settings.brand_logo_image_url && (
+                <button
+                  onClick={handleLogoDelete}
+                  disabled={isUploading}
+                  className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-red-200 text-red-500 text-xs font-bold rounded-xl hover:bg-red-50 hover:border-red-400 transition-all disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete Custom Logo &amp; Reset to Text Logo
+                </button>
+              )}
             </SectionCard>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useMotionValueEvent, animate } from "motion/react";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 type WheelSegment = {
@@ -17,6 +17,20 @@ const FALLBACK_SEGMENTS: WheelSegment[] = [
   { id: 3, label: ["Priority", "Processing"], color: "#2B2880" },
   { id: 4, label: ["Free Name", "Clearance"], color: "#3B39A0" },
 ];
+
+const wrapLabel = (labelLines: string[]): string[] => {
+  const wrapped: string[] = [];
+  labelLines.forEach(line => {
+    if (line.length > 11 && line.includes(" ")) {
+      const words = line.split(" ");
+      const mid = Math.ceil(words.length / 2);
+      wrapped.push(words.slice(0, mid).join(" "), words.slice(mid).join(" "));
+    } else {
+      wrapped.push(line);
+    }
+  });
+  return wrapped;
+};
 
 type SpinWheelProps = {
   segments: WheelSegment[];
@@ -105,6 +119,10 @@ function SpinWheel({ segments, onSpinDone }: SpinWheelProps) {
               const tx = 50 + 32 * Math.cos(radMid);
               const ty = 50 + 32 * Math.sin(radMid);
 
+              const lines = wrapLabel(seg.label);
+              const N = lines.length;
+              const gap = 4.8;
+
               return (
                 <g key={seg.id || idx}>
                   <path
@@ -112,13 +130,13 @@ function SpinWheel({ segments, onSpinDone }: SpinWheelProps) {
                     fill={seg.color}
                     stroke="none"
                   />
-                  {seg.label.map((line, li) => (
+                  {lines.map((line, li) => (
                     <text
                       key={li}
                       x={tx}
-                      y={ty + li * 5.5 - 2.5}
+                      y={ty + (li - (N - 1) / 2) * gap}
                       fill="rgba(255,255,255,0.92)"
-                      fontSize="4.5"
+                      fontSize={line.length > 18 ? "2.8" : line.length > 14 ? "3.4" : line.length > 10 ? "3.9" : "4.5"}
                       fontWeight="bold"
                       textAnchor="middle"
                       data-cx={tx}
@@ -146,8 +164,9 @@ function SpinWheel({ segments, onSpinDone }: SpinWheelProps) {
       </div>
 
       {!isSpinning && !isBlinking && (
-        <div className="absolute bottom-[-28px] text-xs text-slate-400 font-semibold tracking-widest uppercase animate-pulse">
-          Click to spin
+        <div className="absolute bottom-[-34px] bg-[#0D0D3A]/90 backdrop-blur-md border border-emerald-500/40 text-emerald-400 font-display font-black text-[10px] tracking-widest uppercase px-5 py-2 rounded-full shadow-lg shadow-emerald-500/20 animate-bounce flex items-center gap-1.5 z-20 pointer-events-none transition-all">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-spin" style={{ animationDuration: '3s' }} />
+          <span>Click to spin</span>
         </div>
       )}
     </div>

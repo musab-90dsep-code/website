@@ -25,6 +25,21 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   hero_cta_button: "Contact Our Experts",
   brand_name: "AL NAZIM TRAVELS",
   brand_sub: "Jeddah · Saudi Arabia",
+  brand_logo_text: "A",
+  brand_logo_image_url: "",
+  email_notification_key: "",
+  passport_whatsapp: "+966598327617",
+  passport_contact_title: "Live Query Desk",
+  passport_contact_subtitle: "Get in touch with our experts. We're ready to answer your E-Passport questions.",
+  passport_contact_phone: "",
+  passport_contact_email: "",
+  passport_contact_address: "",
+  visa_whatsapp: "+966598327617",
+  visa_contact_title: "Live Query Desk",
+  visa_contact_subtitle: "Get in touch with our experts. We're ready to answer your Visa questions.",
+  visa_contact_phone: "",
+  visa_contact_email: "",
+  visa_contact_address: "",
   why_choose_title: "Why Choose Us",
   why_choose_para1: "At Al Nazim Travels, we believe in delivering uncompromising quality, speed, and transparency. Our team of seasoned professionals is dedicated to simplifying complex procedures—from E-Passport processing to Visa applications—ensuring you achieve your goals without the usual hassle.",
   why_choose_para2: "We pride ourselves on our deep industry knowledge and our commitment to putting clients first. Every application is handled with the utmost care, giving you peace of mind and guaranteeing a smooth, efficient experience from start to finish.",
@@ -66,6 +81,8 @@ export default function SaudiInvestmentLanding({
   const [quoteName, setQuoteName] = useState("");
   const [quotePhone, setQuotePhone] = useState("");
   const [quoteService, setQuoteService] = useState("E-Passport Application");
+  const [queryName, setQueryName] = useState("");
+  const [queryPhone, setQueryPhone] = useState("");
 
   const s = (key: string) => settings[key] || DEFAULT_SETTINGS[key] || "";
 
@@ -95,10 +112,41 @@ export default function SaudiInvestmentLanding({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleQuoteSubmit = (e: FormEvent) => {
+  const handleQuoteSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setQuoteStatus("submitting");
-    setTimeout(() => setQuoteStatus("done"), 1200);
+
+    // 1. Save to Supabase Leads
+    try {
+      const requirementText = `[Quote Request] Phone: ${quotePhone} | Requested Solution: ${quoteService}`;
+      await supabase.from("leads").insert([{ name: quoteName, requirement: requirementText }]);
+    } catch (err) {
+      console.error("Failed to save quote lead", err);
+    }
+
+    // 2. Dispatch Email Notification
+    const emailKey = s("email_notification_key");
+    if (emailKey) {
+      try {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: emailKey,
+            subject: `New Quote Request from ${quoteName}`,
+            from_name: "Al Naseem Travels Hub",
+            name: quoteName,
+            phone: quotePhone,
+            requested_service: quoteService,
+            message: `Client ${quoteName} has requested a quote for the service: "${quoteService}". Saudi Phone: ${quotePhone}.`
+          })
+        });
+      } catch (err) {
+        console.error("Failed to send email notification", err);
+      }
+    }
+
+    setQuoteStatus("done");
   };
 
   return (
@@ -107,7 +155,13 @@ export default function SaudiInvestmentLanding({
       {/* ── NAVBAR ───────────────────────────────────────────────────────── */}
       <nav id="top-navigation" className={`h-[68px] px-4 md:px-12 flex items-center justify-between fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? "bg-slate-900/95 backdrop-blur-lg border-b border-white/10 shadow-lg" : "bg-transparent border-b border-white/5"}`}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">A</div>
+          {s("brand_logo_image_url") ? (
+            <img src={s("brand_logo_image_url")} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-lg border border-white/10" />
+          ) : (
+            <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">
+              {s("brand_logo_text") || "A"}
+            </div>
+          )}
           <div className="flex flex-col leading-none">
             <span className="font-display font-black text-sm tracking-tight text-white">{s("brand_name")}</span>
             <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{s("brand_sub")}</span>
@@ -130,7 +184,7 @@ export default function SaudiInvestmentLanding({
       <section id="homepage" className="relative min-h-[600px] text-white py-20 px-4 md:px-12 flex flex-col justify-center overflow-hidden bg-slate-900">
         <div className="absolute inset-0 z-0">
           <img
-            src={dataLoaded ? s("hero_image_url") : ""}
+            src={dataLoaded ? s("hero_image_url") : undefined}
             alt="Hero"
             className={`w-full h-full object-cover object-center transition-opacity duration-700 ${dataLoaded ? "opacity-100" : "opacity-0"}`}
           />
@@ -154,8 +208,12 @@ export default function SaudiInvestmentLanding({
             {s("hero_badge_text")}
           </div>
           <h1 className="text-4xl md:text-7xl font-black text-white leading-tight text-center tracking-tighter font-display uppercase drop-shadow-xl">
-            {s("hero_title_line1")} <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
+            <span className="block overflow-hidden py-1.5">
+              <span className="block animate-title-scroll">
+                {s("hero_title_line1")}
+              </span>
+            </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 block mt-1">
               {s("hero_title_line2")}
             </span>
           </h1>
@@ -256,13 +314,27 @@ export default function SaudiInvestmentLanding({
               </div>
             </div>
             <div className="flex-1 space-y-3">
-              <input type="text" placeholder="Your Name" className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" />
-              <input type="tel" placeholder="Phone Number" className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" />
+              <input 
+                type="text" 
+                placeholder="Your Name" 
+                value={queryName}
+                onChange={e => setQueryName(e.target.value)}
+                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" 
+              />
+              <input 
+                type="tel" 
+                placeholder="Phone Number" 
+                value={queryPhone}
+                onChange={e => setQueryPhone(e.target.value)}
+                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" 
+              />
               <a
-                href={`https://wa.me/${s("contact_whatsapp").replace(/\D/g, "")}`}
+                href={`https://wa.me/${s("contact_whatsapp").replace(/\D/g, "")}?text=${encodeURIComponent(
+                  `Hello! My name is ${queryName || "Client"} and my phone is ${queryPhone || "Not Provided"}. I would like to consult about Saudi Business Hub.`
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors no-underline"
+                className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors no-underline cursor-pointer"
               >
                 WhatsApp Us
               </a>
