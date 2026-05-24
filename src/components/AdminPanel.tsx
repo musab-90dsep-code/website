@@ -78,6 +78,9 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const [editingCard, setEditingCard] = useState<FeatureCard | null>(null);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [heroPreviewMode, setHeroPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [passportPreviewMode, setPassportPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [visaPreviewMode, setVisaPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
   const showToast = (message: string, type: "success" | "error" = "success") => setToast({ message, type });
 
@@ -106,7 +109,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     if (servRes.data) setServices(servRes.data);
     if (revRes.data) setReviews(revRes.data);
     if (featRes.data) setFeatureCards(featRes.data);
-    
+
     // Catch errors for non-existent tables gracefully
     if (epassRes.data) setEpassportReqs(epassRes.data);
     if (visaRes.data) setVisaCountries(visaRes.data);
@@ -307,6 +310,88 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handlePassportCoverUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `passport_cover_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("images").getPublicUrl(fileName);
+      await supabase.from("site_settings").upsert({ key: "passport_cover_image_url", value: publicUrl }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, passport_cover_image_url: publicUrl }));
+      showToast("E-Passport cover image updated successfully!");
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handlePassportCoverDelete = async () => {
+    if (!confirm("Are you sure you want to delete the passport cover image and reset to default?")) return;
+    setIsUploading(true);
+    try {
+      const currentUrl = settings.passport_cover_image_url || "";
+      if (currentUrl.includes("supabase") && currentUrl.includes("/images/")) {
+        const parts = currentUrl.split("/images/");
+        if (parts[1]) {
+          await supabase.storage.from("images").remove([parts[1]]);
+        }
+      }
+      await supabase.from("site_settings").upsert({ key: "passport_cover_image_url", value: "" }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, passport_cover_image_url: "" }));
+      showToast("Passport cover image reset to default!");
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleVisaCoverUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `visa_cover_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("images").getPublicUrl(fileName);
+      await supabase.from("site_settings").upsert({ key: "visa_cover_image_url", value: publicUrl }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, visa_cover_image_url: publicUrl }));
+      showToast("Visa cover image updated successfully!");
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleVisaCoverDelete = async () => {
+    if (!confirm("Are you sure you want to delete the visa cover image and reset to default?")) return;
+    setIsUploading(true);
+    try {
+      const currentUrl = settings.visa_cover_image_url || "";
+      if (currentUrl.includes("supabase") && currentUrl.includes("/images/")) {
+        const parts = currentUrl.split("/images/");
+        if (parts[1]) {
+          await supabase.storage.from("images").remove([parts[1]]);
+        }
+      }
+      await supabase.from("site_settings").upsert({ key: "visa_cover_image_url", value: "" }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, visa_cover_image_url: "" }));
+      showToast("Visa cover image reset to default!");
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // ── Login Screen ──────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
@@ -350,13 +435,13 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const aboutKeys = ["why_choose_title", "why_choose_para1", "why_choose_para2"];
   const servicesSectionKeys = ["services_section_title", "services_section_subtitle", "testimonials_section_title", "testimonials_section_subtitle"];
   const contactKeys = ["contact_phone", "contact_email", "contact_address", "contact_whatsapp", "email_notification_key"];
-  
+
   // চাকার জন্য নতুন কী ডেফিনিশন গ্রুপ
   const wheelKeys = ["wheel_winner_line1", "wheel_winner_line2"];
 
   const SettingField = ({ settingKey, onSave }: { key?: React.Key; settingKey: string; onSave: (key: string, val: string) => void }) => {
     const [val, setVal] = useState(settings[settingKey] || "");
-    
+
     // সেটিংস চেঞ্জ হলে ইনপুট ভ্যালু সিঙ্ক রাখার জন্য
     useEffect(() => {
       setVal(settings[settingKey] || "");
@@ -370,7 +455,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
           <textarea value={val} onChange={e => setVal(e.target.value)} rows={3} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500 resize-none" />
         ) : (
           <input type="text" value={val} onChange={e => setVal(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-rose-500" />
-        ) }
+        )}
         <button onClick={() => onSave(settingKey, val)} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-teal-600 transition-colors">
           <Save className="w-3 h-3" /> Save
         </button>
@@ -857,18 +942,53 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
               <p className="text-xs text-slate-500 mb-4">Upload a new image to replace the main hero background on the homepage. Recommended: 1920×1080px or similar wide-format image.</p>
 
               {settings.hero_image_url && (
-                <div className="mb-4 rounded-xl overflow-hidden bg-slate-100 relative group">
-                  <img src={settings.hero_image_url} alt="Current hero" className="w-full h-40 object-cover" />
-                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all flex items-center justify-center">
-                    <button
-                      onClick={handleImageDelete}
-                      disabled={isUploading}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl hover:bg-red-600 shadow-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete & Reset to Default
-                    </button>
+                <div className="mb-6">
+                  {/* Dynamic Device Preview Toggle */}
+                  <div className="flex items-center justify-between mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200/60 max-w-xs">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Device View Mock:</span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setHeroPreviewMode("desktop")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${heroPreviewMode === "desktop" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Desktop
+                      </button>
+                      <button
+                        onClick={() => setHeroPreviewMode("mobile")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${heroPreviewMode === "mobile" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Mobile
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 p-2 font-mono truncate">{settings.hero_image_url}</p>
+
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
+                    heroPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                  }`}>
+                    <img src={settings.hero_image_url} alt="Current hero" className="w-full h-full object-cover object-center opacity-70" />
+                    
+                    {/* Safe zone indicator grid */}
+                    <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
+                      <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>
+                    </div>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-gradient-to-t from-slate-950/80 via-slate-900/10 to-transparent pointer-events-none">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/80 text-white font-mono text-[8px] font-black uppercase tracking-wider mb-2">Live Web Banner View</span>
+                      <h1 className={`${heroPreviewMode === "desktop" ? "text-sm md:text-lg" : "text-xs"} font-black text-white leading-tight drop-shadow-md`}>{settings.brand_name || "AL NAZIM TRAVELS"}</h1>
+                      <p className={`${heroPreviewMode === "desktop" ? "text-[8px]" : "text-[6px]"} text-slate-300 font-medium drop-shadow-sm mt-1 max-w-[180px] mx-auto`}>
+                        {heroPreviewMode === "desktop" ? "Hero Background Banner (Centered Crop)" : "Mobile Tall Crop"}
+                      </p>
+                    </div>
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/60 transition-all flex items-center justify-center">
+                      <button
+                        onClick={handleImageDelete}
+                        disabled={isUploading}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl hover:bg-red-600 shadow-lg cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete & Reset to Default
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -936,6 +1056,162 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                 </button>
               )}
             </SectionCard>
+
+            <SectionCard title="E-Passport Page Cover Image">
+              <p className="text-xs text-slate-500 mb-4">Upload a custom cover image for the E-Passport Page. Recommended: 1920×1080px or similar wide-format image.</p>
+
+              {/* Dynamic Device Preview Toggle */}
+              {(settings.passport_cover_image_url || true) && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200/60 max-w-xs">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Device View Mock:</span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setPassportPreviewMode("desktop")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${passportPreviewMode === "desktop" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Desktop
+                      </button>
+                      <button
+                        onClick={() => setPassportPreviewMode("mobile")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${passportPreviewMode === "mobile" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Mobile
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
+                    passportPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                  }`}>
+                    <img src={settings.passport_cover_image_url || "/epassport_cover.png"} alt="Passport cover" className="w-full h-full object-cover object-center opacity-60" />
+                    
+                    {/* Safe zone indicator grid */}
+                    <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
+                      <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>
+                    </div>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-gradient-to-t from-slate-950/80 via-slate-900/10 to-transparent pointer-events-none">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/80 text-white font-mono text-[8px] font-black uppercase tracking-wider mb-2">Live Web Banner View</span>
+                      <h1 className={`${passportPreviewMode === "desktop" ? "text-sm md:text-lg" : "text-xs"} font-black text-white leading-tight drop-shadow-md`}>{settings.epassport_page_title || "ই-পাসপোর্ট আবেদন"}</h1>
+                      <p className={`${passportPreviewMode === "desktop" ? "text-[8px]" : "text-[6px]"} text-slate-300 font-medium drop-shadow-sm mt-1 max-w-[180px] mx-auto`}>
+                        {passportPreviewMode === "desktop" ? "Passport Background Banner (Centered Crop)" : "Mobile Tall Crop"}
+                      </p>
+                    </div>
+                    {settings.passport_cover_image_url && (
+                      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/60 transition-all flex items-center justify-center">
+                        <button
+                          onClick={handlePassportCoverDelete}
+                          disabled={isUploading}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl hover:bg-red-600 shadow-lg cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete & Reset to Default
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload area */}
+              <label className={`flex flex-col items-center gap-3 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isUploading ? "border-rose-300 bg-rose-50" : "border-slate-300 hover:border-rose-400 hover:bg-rose-50/40"}`}>
+                <Upload className={`w-8 h-8 ${isUploading ? "text-rose-500 animate-bounce" : "text-slate-400"}`} />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new cover image"}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP supported</p>
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handlePassportCoverUpload} disabled={isUploading} />
+              </label>
+
+              {settings.passport_cover_image_url && (
+                <button
+                  onClick={handlePassportCoverDelete}
+                  disabled={isUploading}
+                  className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-red-200 text-red-500 text-xs font-bold rounded-xl hover:bg-red-50 hover:border-red-400 transition-all disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete Custom Cover &amp; Reset to Default
+                </button>
+              )}
+            </SectionCard>
+
+            <SectionCard title="Visa Page Cover Image">
+              <p className="text-xs text-slate-500 mb-4">Upload a custom cover image for the Visa Page. Recommended: 1920×1080px or similar wide-format image.</p>
+
+              {/* Dynamic Device Preview Toggle */}
+              {(settings.visa_cover_image_url || true) && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200/60 max-w-xs">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Device View Mock:</span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setVisaPreviewMode("desktop")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${visaPreviewMode === "desktop" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Desktop
+                      </button>
+                      <button
+                        onClick={() => setVisaPreviewMode("mobile")}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${visaPreviewMode === "mobile" ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-200"}`}
+                      >
+                        Mobile
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${
+                    visaPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
+                  }`}>
+                    <img src={settings.visa_cover_image_url || "/epassport_cover.png"} alt="Visa cover" className="w-full h-full object-cover object-center opacity-60" />
+                    
+                    {/* Safe zone indicator grid */}
+                    <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
+                      <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">Safe Zone Grid</span>
+                    </div>
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-gradient-to-t from-slate-950/80 via-slate-900/10 to-transparent pointer-events-none">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/80 text-white font-mono text-[8px] font-black uppercase tracking-wider mb-2">Live Web Banner View</span>
+                      <h1 className={`${visaPreviewMode === "desktop" ? "text-sm md:text-lg" : "text-xs"} font-black text-white leading-tight drop-shadow-md`}>{settings.visa_page_title || "ভিসা আবেদন"}</h1>
+                      <p className={`${visaPreviewMode === "desktop" ? "text-[8px]" : "text-[6px]"} text-slate-300 font-medium drop-shadow-sm mt-1 max-w-[180px] mx-auto`}>
+                        {visaPreviewMode === "desktop" ? "Visa Background Banner (Centered Crop)" : "Mobile Tall Crop"}
+                      </p>
+                    </div>
+                    {settings.visa_cover_image_url && (
+                      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/60 transition-all flex items-center justify-center">
+                        <button
+                          onClick={handleVisaCoverDelete}
+                          disabled={isUploading}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl hover:bg-red-600 shadow-lg cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete & Reset to Default
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload area */}
+              <label className={`flex flex-col items-center gap-3 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isUploading ? "border-rose-300 bg-rose-50" : "border-slate-300 hover:border-rose-400 hover:bg-rose-50/40"}`}>
+                <Upload className={`w-8 h-8 ${isUploading ? "text-rose-500 animate-bounce" : "text-slate-400"}`} />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new cover image"}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP supported</p>
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handleVisaCoverUpload} disabled={isUploading} />
+              </label>
+
+              {settings.visa_cover_image_url && (
+                <button
+                  onClick={handleVisaCoverDelete}
+                  disabled={isUploading}
+                  className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-red-200 text-red-500 text-xs font-bold rounded-xl hover:bg-red-50 hover:border-red-400 transition-all disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete Custom Cover &amp; Reset to Default
+                </button>
+              )}
+            </SectionCard>
           </div>
         )}
       </div>
@@ -945,3 +1221,6 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     </div>
   );
 }
+
+// Touched to refresh IDE language server cache
+

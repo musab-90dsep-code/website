@@ -136,7 +136,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
       {/* Cover Photo Section */}
       <div className="relative w-full h-[40vh] md:h-[50vh] bg-slate-900">
         <img
-          src="/epassport_cover.png"
+          src={settings.visa_cover_image_url || "/epassport_cover.png"}
           alt="Visa Services"
           className="w-full h-full object-cover object-center opacity-60"
         />
@@ -216,34 +216,34 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
             <div className="flex flex-col md:flex-row gap-8 justify-center text-left">
               <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <PhoneCall className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hotline</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">
                       {settings.visa_contact_phone || settings.contact_phone || "+966 50 111 2222"}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Mail className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Support</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">
                       {settings.visa_contact_email || settings.contact_email || "info@alnazimtravels.com"}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Headquarters</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">
                       {settings.visa_contact_address || settings.contact_address || "Jeddah, Saudi Arabia"}
                     </div>
                   </div>

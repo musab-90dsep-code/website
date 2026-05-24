@@ -267,15 +267,7 @@ export default function SpinningHub({ onRewardWon }: { onRewardWon?: (reward: st
   useEffect(() => {
     const fetchWheelConfig = async () => {
       try {
-        // ১. চাকার বেসিক কনফিগারেশন লোড করা
-        const { data: wheelData, error: wheelError } = await supabase
-          .from("wheel_config")
-          .select("*")
-          .order("order_num", { ascending: true });
-
-        // If the table doesn't exist, we just ignore it and use fallback
-
-        // ২. সাইট সেটিংস থেকে অ্যাডমিনের দেওয়া কাস্টম উইনার লেবেল লোড করা
+        // ১. সাইট সেটিংস থেকে অ্যাডমিনের দেওয়া কাস্টম উইনার লেবেল লোড করা
         const { data: settingsData } = await supabase
           .from("site_settings")
           .select("*")
@@ -287,53 +279,16 @@ export default function SpinningHub({ onRewardWon }: { onRewardWon?: (reward: st
           customWinner[item.key] = item.value;
         });
 
-        if (wheelData && wheelData.length > 0) {
-          const formattedSegments1 = wheelData.map((item: any, idx: number) => {
-            // যদি ইনডেক্স ১ (সবুজ অংশ) হয় এবং অ্যাডমিন প্যানেল থেকে লেখা চেঞ্জ করা থাকে
-            if (idx === 1 && (customWinner.wheel1_winner_line1 || customWinner.wheel1_winner_line2)) {
-              return {
-                id: item.id,
-                label: [customWinner.wheel1_winner_line1, customWinner.wheel1_winner_line2].filter(Boolean),
-                color: item.color
-              };
-            }
-            return {
-              id: item.id,
-              label: [item.label_line1, item.label_line2].filter(Boolean),
-              color: item.color
-            };
-          });
-          
-          const formattedSegments2 = wheelData.map((item: any, idx: number) => {
-            // যদি ইনডেক্স ১ (সবুজ অংশ) হয় এবং অ্যাডমিন প্যানেল থেকে লেখা চেঞ্জ করা থাকে
-            if (idx === 1 && (customWinner.wheel2_winner_line1 || customWinner.wheel2_winner_line2)) {
-              return {
-                id: item.id,
-                label: [customWinner.wheel2_winner_line1, customWinner.wheel2_winner_line2].filter(Boolean),
-                color: item.color
-              };
-            }
-            return {
-              id: item.id,
-              label: [item.label_line1, item.label_line2].filter(Boolean),
-              color: item.color
-            };
-          });
-          
-          setSegments1(formattedSegments1);
-          setSegments2(formattedSegments2);
-        } else {
-          // যদি wheel_config টেবিল ফাকা থাকে কিন্তু অ্যাডমিন প্যানেলের সাইট টেক্সট থাকে, তবে ফলব্যাক লিস্ট আপডেট করা
-          setSegments1(prev => prev.map((seg, idx) => idx === 1 && (customWinner.wheel1_winner_line1 || customWinner.wheel1_winner_line2) ? {
-            ...seg,
-            label: [customWinner.wheel1_winner_line1, customWinner.wheel1_winner_line2].filter(Boolean)
-          } : seg));
-          
-          setSegments2(prev => prev.map((seg, idx) => idx === 1 && (customWinner.wheel2_winner_line1 || customWinner.wheel2_winner_line2) ? {
-            ...seg,
-            label: [customWinner.wheel2_winner_line1, customWinner.wheel2_winner_line2].filter(Boolean)
-          } : seg));
-        }
+        // ফলব্যাক স্লাইস থেকে লোড করা এবং শুধুমাত্র সবুজ বিজয়ী ঘরটিকে (idx === 1) কাস্টম উইনার লেবেল দিয়ে আপডেট করা
+        setSegments1(FALLBACK_SEGMENTS.map((seg, idx) => idx === 1 && (customWinner.wheel1_winner_line1 || customWinner.wheel1_winner_line2) ? {
+          ...seg,
+          label: [customWinner.wheel1_winner_line1, customWinner.wheel1_winner_line2].filter(Boolean)
+        } : seg));
+        
+        setSegments2(FALLBACK_SEGMENTS.map((seg, idx) => idx === 1 && (customWinner.wheel2_winner_line1 || customWinner.wheel2_winner_line2) ? {
+          ...seg,
+          label: [customWinner.wheel2_winner_line1, customWinner.wheel2_winner_line2].filter(Boolean)
+        } : seg));
       } catch (err) {
         console.error("Error fetching wheel configuration:", err);
       }

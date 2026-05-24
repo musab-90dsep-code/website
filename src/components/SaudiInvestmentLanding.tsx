@@ -286,30 +286,30 @@ export default function SaudiInvestmentLanding({
           <div className="flex flex-col md:flex-row gap-8 justify-center max-w-2xl mx-auto text-left">
             <div className="flex-1 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <PhoneCall className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hotline</div>
-                  <div className="font-bold text-slate-800">{s("contact_phone")}</div>
+                  <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">{s("contact_phone")}</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Mail className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Support</div>
-                  <div className="font-bold text-slate-800">{s("contact_email")}</div>
+                  <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">{s("contact_email")}</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Headquarters</div>
-                  <div className="font-bold text-slate-800">{s("contact_address")}</div>
+                  <div className="font-bold text-slate-800 break-all text-xs md:text-sm lg:text-base">{s("contact_address")}</div>
                 </div>
               </div>
             </div>
