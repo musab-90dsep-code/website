@@ -249,7 +249,7 @@ export default function App() {
                 <div id="quick-consult-trigger" className="pt-12 flex flex-col items-center">
                   <a href="#contact" className="relative group flex flex-col items-center no-underline cursor-pointer">
                     <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-rose-500 shadow-md group-hover:scale-105 transition-all duration-300 relative z-20">
-                      <img src="/image.png" alt="Consultant" className="w-full h-full object-cover object-top" />
+                      <img src="/image.webp" alt="Consultant" className="w-full h-full object-cover object-top" />
                     </div>
 
                     <span className="mt-4 text-rose-500 font-display font-black text-sm uppercase tracking-widest group-hover:text-rose-600 transition-colors drop-shadow-sm">

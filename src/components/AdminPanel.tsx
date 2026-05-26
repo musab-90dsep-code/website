@@ -348,8 +348,8 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
           await supabase.storage.from("images").remove([parts[1]]);
         }
       }
-      await supabase.from("site_settings").upsert({ key: "hero_image_url", value: "/image.png" }, { onConflict: "key" });
-      setSettings(prev => ({ ...prev, hero_image_url: "/image.png" }));
+      await supabase.from("site_settings").upsert({ key: "hero_image_url", value: "/image.webp" }, { onConflict: "key" });
+      setSettings(prev => ({ ...prev, hero_image_url: "/image.webp" }));
       showToast("Hero image deleted and reset to default!");
     } catch (err: any) {
       showToast(err.message || "Delete failed", "error");

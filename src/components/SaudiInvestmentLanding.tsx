@@ -16,7 +16,7 @@ type FeatureCard = { id: string; title: string; description: string; icon_name: 
 
 // Default settings fallback so site never looks empty while loading
 const DEFAULT_SETTINGS: Record<string, string> = {
-  hero_image_url: "/image.png",
+  hero_image_url: "/image.webp",
   hero_badge_text: "Saudi Business Consultancy",
   hero_title_line1: "Saudi Business",
   hero_title_line2: "Consultancy",
