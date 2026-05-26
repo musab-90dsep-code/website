@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 
 type VisaCountry = { id: string; name: string; type: string; desc_text: string; icon_bg: string; icon_color: string; order_num: number };
 
-export default function VisaApplicationPage({ onBack }: { onBack: () => void }) {
+export default function VisaApplicationPage({ onBack }: { onBack: (section?: string) => void }) {
   const [title, setTitle] = useState("ভিসা আবেদন");
   const [subtitle, setSubtitle] = useState("আমরা বিশ্বের বিভিন্ন দেশের ভিসা প্রসেসিং করে থাকি। আপনার প্রয়োজনীয় দেশের ভিসা নির্বাচন করুন এবং ঝামেলামুক্ত সেবা উপভোগ করুন।");
   const [destTitle, setDestTitle] = useState("আমাদের ভিসা গন্তব্যসমূহ");
@@ -14,6 +14,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
   const [whatsappLink, setWhatsappLink] = useState("https://wa.me/966598327617");
   const [queryName, setQueryName] = useState("");
   const [queryPhone, setQueryPhone] = useState("");
+  const [queryStatus, setQueryStatus] = useState<"idle" | "submitting" | "done">("idle");
 
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteStatus, setQuoteStatus] = useState<"idle" | "submitting" | "done">("idle");
@@ -72,6 +73,53 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
     setQuoteStatus("done");
   };
 
+  const handleLiveQuerySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!queryName.trim() || !queryPhone.trim()) return;
+    setQueryStatus("submitting");
+
+    // 1. Save to Supabase Leads
+    try {
+      const requirementText = `[Visa Live Query Desk] Phone: ${queryPhone}`;
+      await supabase.from("leads").insert([{ name: queryName, requirement: requirementText }]);
+    } catch (err) {
+      console.error("Failed to save live query lead", err);
+    }
+
+    // 2. Dispatch Email Notification
+    const emailKey = settings.email_notification_key;
+    if (emailKey) {
+      try {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: emailKey,
+            subject: `New Visa Live Query from ${queryName}`,
+            from_name: "Al Naseem Travels Hub",
+            name: queryName,
+            phone: queryPhone,
+            message: `Client ${queryName} submitted a visa query. Saudi Phone: ${queryPhone}.`
+          })
+        });
+      } catch (err) {
+        console.error("Failed to send email notification", err);
+      }
+    }
+
+    // 3. Redirect to WhatsApp
+    window.open(getVisaQueryWhatsapp(), "_blank");
+
+    setQueryStatus("done");
+
+    // Reset inputs
+    setTimeout(() => {
+      setQueryStatus("idle");
+      setQueryName("");
+      setQueryPhone("");
+    }, 2000);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       const [settingsRes, countriesRes] = await Promise.all([
@@ -113,24 +161,45 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
-      <nav className="h-[64px] bg-slate-900/90 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+      <nav className="h-[68px] bg-slate-900/95 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md shadow-lg">
         {/* Logo & Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-rose-500/30 italic text-xl">S</div>
-          <span className="font-display font-black text-sm md:text-base tracking-tight text-white">SAUDI INVESTMENT</span>
+          {settings.brand_logo_image_url ? (
+            <img src={settings.brand_logo_image_url} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-lg border border-white/10" />
+          ) : (
+            <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">
+              {settings.brand_logo_text || "A"}
+            </div>
+          )}
+          <div className="flex flex-col leading-none">
+            <span className="font-display font-black text-sm tracking-tight text-white">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
+            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
+          </div>
         </div>
-        {/* Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <span className="text-orange-400">{title}</span>
+        
+        {/* Center Links */}
+        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+          {[{ label: "Home", href: "home" }, { label: "Service", href: "service" }, { label: "Why Us", href: "why" }, { label: "Contact", href: "contact" }].map(link => (
+            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 cursor-pointer">
+              {link.label}
+            </button>
+          ))}
         </div>
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          হোমে ফিরে যান
-        </button>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onBack()}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-xs border-0 cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>হোমে ফিরে যান</span>
+          </button>
+          <button onClick={() => setShowQuoteModal(true)} className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-orange-500 text-white px-5 py-2.5 rounded-full hover:from-rose-600 hover:to-orange-600 transition-all font-bold text-xs shadow-lg shadow-rose-500/30 hover:scale-105 flex items-center gap-2 cursor-pointer border-0">
+            <span>Get Quote</span>
+            <span className="text-rose-200">→</span>
+          </button>
+        </div>
       </nav>
 
       {/* Cover Photo Section */}
@@ -249,12 +318,13 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
                   </div>
                 </div>
               </div>
-              <div className="flex-1 space-y-3">
+              <form onSubmit={handleLiveQuerySubmit} className="flex-1 space-y-3">
                 <input
                   type="text"
                   placeholder="Your Name"
                   value={queryName}
                   onChange={e => setQueryName(e.target.value)}
+                  required
                   className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
                 <input
@@ -262,17 +332,17 @@ export default function VisaApplicationPage({ onBack }: { onBack: () => void }) 
                   placeholder="Phone Number"
                   value={queryPhone}
                   onChange={e => setQueryPhone(e.target.value)}
+                  required
                   className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
-                <a
-                  href={getVisaQueryWhatsapp()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors no-underline cursor-pointer"
+                <button
+                  type="submit"
+                  disabled={queryStatus === "submitting"}
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors cursor-pointer border-0"
                 >
-                  WhatsApp Us
-                </a>
-              </div>
+                  {queryStatus === "submitting" ? "Sending..." : "WhatsApp Us"}
+                </button>
+              </form>
             </div>
           </div>
 

@@ -2,24 +2,38 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  /* ... আপনার বাকি ফন্ট কনফিগ ... */
 
-  --animate-title-scroll: title-scroll 6s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+  --animate-title-scroll: title-scroll 6s linear infinite;
 
   @keyframes title-scroll {
+    /* একদম নিচ থেকে পারফেক্টলি শুরু হবে */
     0% {
-      transform: translateY(105%);
-      opacity: 0;
+      transform: translateY(100%);
     }
-    8%, 92% {
-      transform: translateY(0);
-      opacity: 1;
-    }
+
+    /* কোনো বাড়তি ফাঁকা জায়গা ছাড়া সরাসরি উপরের বর্ডার টাচ করে ভেতরে ঢুকে যাবে */
     100% {
-      transform: translateY(-105%);
-      opacity: 0;
+      transform: translateY(-100%);
     }
   }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f43f5e, #f97316);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fb7185, #fb923c);
 }

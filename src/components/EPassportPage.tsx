@@ -8,7 +8,7 @@ const IconMap: Record<string, any> = {
 
 type EPassportRequirement = { id: string; title: string; desc_text: string; icon_name: string; color: string; order_num: number };
 
-export default function EPassportPage({ onBack }: { onBack: () => void }) {
+export default function EPassportPage({ onBack }: { onBack: (section?: string) => void }) {
   const [title, setTitle] = useState("ই-পাসপোর্ট আবেদন");
   const [subtitle, setSubtitle] = useState("দ্রুত, নির্ভরযোগ্য এবং ঝামেলামুক্ত ই-পাসপোর্ট প্রসেসিং। আপনার আবেদন যাতে কোনো বিলম্ব ছাড়া অনুমোদিত হয়, সে জন্য আমরা প্রতিটি ধাপে আপনাকে সাহায্য করব।");
   const [reqTitle, setReqTitle] = useState("আবেদনের জন্য যা যা লাগবে");
@@ -24,6 +24,12 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
   const [quoteName, setQuoteName] = useState("");
   const [quotePhone, setQuotePhone] = useState("");
   const [quoteService, setQuoteService] = useState("E-Passport Application");
+  const [queryStatus, setQueryStatus] = useState<"idle" | "submitting" | "done">("idle");
+
+  const [checkedReqs, setCheckedReqs] = useState<Record<string, boolean>>({});
+  const toggleReq = (id: string) => {
+    setCheckedReqs(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const getEPassportQueryWhatsapp = () => {
     const num = (settings.passport_whatsapp || settings.contact_whatsapp || "966598327617").replace(/\D/g, "");
@@ -70,6 +76,53 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
     setQuoteStatus("done");
   };
 
+  const handleLiveQuerySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!queryName.trim() || !queryPhone.trim()) return;
+    setQueryStatus("submitting");
+
+    // 1. Save to Supabase Leads
+    try {
+      const requirementText = `[Passport Live Query Desk] Phone: ${queryPhone}`;
+      await supabase.from("leads").insert([{ name: queryName, requirement: requirementText }]);
+    } catch (err) {
+      console.error("Failed to save live query lead", err);
+    }
+
+    // 2. Dispatch Email Notification
+    const emailKey = settings.email_notification_key;
+    if (emailKey) {
+      try {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: emailKey,
+            subject: `New Passport Live Query from ${queryName}`,
+            from_name: "Al Naseem Travels Hub",
+            name: queryName,
+            phone: queryPhone,
+            message: `Client ${queryName} submitted a passport query. Saudi Phone: ${queryPhone}.`
+          })
+        });
+      } catch (err) {
+        console.error("Failed to send email notification", err);
+      }
+    }
+
+    // 3. Redirect to WhatsApp
+    window.open(getEPassportQueryWhatsapp(), "_blank");
+
+    setQueryStatus("done");
+
+    // Reset inputs
+    setTimeout(() => {
+      setQueryStatus("idle");
+      setQueryName("");
+      setQueryPhone("");
+    }, 2000);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       const [settingsRes, reqsRes] = await Promise.all([
@@ -109,24 +162,45 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
-      <nav className="h-[64px] bg-slate-900/90 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+      <nav className="h-[68px] bg-slate-900/95 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md shadow-lg">
         {/* Logo & Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-rose-500/30 italic text-xl">S</div>
-          <span className="font-display font-black text-sm md:text-base tracking-tight text-white">SAUDI INVESTMENT</span>
+          {settings.brand_logo_image_url ? (
+            <img src={settings.brand_logo_image_url} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-lg border border-white/10" />
+          ) : (
+            <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">
+              {settings.brand_logo_text || "A"}
+            </div>
+          )}
+          <div className="flex flex-col leading-none">
+            <span className="font-display font-black text-sm tracking-tight text-white">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
+            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
+          </div>
         </div>
-        {/* Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-          <span className="text-rose-400">{title}</span>
+        
+        {/* Center Links */}
+        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+          {[{ label: "Home", href: "home" }, { label: "Service", href: "service" }, { label: "Why Us", href: "why" }, { label: "Contact", href: "contact" }].map(link => (
+            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 cursor-pointer">
+              {link.label}
+            </button>
+          ))}
         </div>
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          হোমে ফিরে যান
-        </button>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onBack()}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-xs border-0 cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>হোমে ফিরে যান</span>
+          </button>
+          <button onClick={() => setShowQuoteModal(true)} className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-orange-500 text-white px-5 py-2.5 rounded-full hover:from-rose-600 hover:to-orange-600 transition-all font-bold text-xs shadow-lg shadow-rose-500/30 hover:scale-105 flex items-center gap-2 cursor-pointer border-0">
+            <span>Get Quote</span>
+            <span className="text-rose-200">→</span>
+          </button>
+        </div>
       </nav>
 
       {/* Cover Photo Section */}
@@ -172,16 +246,60 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
           <div className="grid md:grid-cols-2 gap-6 md:gap-8">
             {requirements.map((req) => {
               const IconComponent = IconMap[req.icon_name] || CheckCircle2;
+              const isChecked = !!checkedReqs[req.id];
+              
+              // Safe border/bg themes mappings
+              const themeBorder = isChecked
+                ? req.color === "blue" ? "border-blue-500 shadow-blue-500/5 shadow-lg"
+                  : req.color === "emerald" ? "border-emerald-500 shadow-emerald-500/5 shadow-lg"
+                  : req.color === "rose" ? "border-rose-500 shadow-rose-500/5 shadow-lg"
+                  : "border-purple-500 shadow-purple-500/5 shadow-lg"
+                : "border-slate-100 hover:border-slate-300 hover:bg-white bg-slate-50/50";
+
+              const themeBg = isChecked
+                ? req.color === "blue" ? "bg-blue-50/20"
+                  : req.color === "emerald" ? "bg-emerald-50/20"
+                  : req.color === "rose" ? "bg-rose-50/20"
+                  : "bg-purple-50/20"
+                : "bg-slate-50/50";
+              
+              const dotTheme = isChecked
+                ? req.color === "blue" ? "bg-blue-500 border-blue-500 text-white"
+                  : req.color === "emerald" ? "bg-emerald-500 border-emerald-500 text-white"
+                  : req.color === "rose" ? "bg-rose-500 border-rose-500 text-white"
+                  : "bg-purple-500 border-purple-500 text-white"
+                : "border-slate-300 bg-white text-transparent";
+
               return (
-                <div key={req.id} className={`flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-${req.color}-200 hover:bg-${req.color}-50/50 transition-colors group`}>
-                  <div className={`w-12 h-12 rounded-full bg-${req.color}-100 text-${req.color}-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                    <IconComponent className="w-6 h-6" />
+                <div
+                  key={req.id}
+                  onClick={() => toggleReq(req.id)}
+                  className={`flex gap-3 p-6 rounded-3xl border-2 transition-all duration-300 cursor-pointer shadow-xs select-none ${themeBorder} ${themeBg}`}
+                >
+                  <div className="flex flex-col items-center justify-start pt-1">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${dotTheme}`}>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 mb-1 text-base">{req.title}</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                      {req.desc_text}
-                    </p>
+                  <div className="flex gap-3 min-w-0">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${
+                      isChecked ? "scale-110" : ""
+                    } ${
+                      req.color === "blue" ? "bg-blue-100 text-blue-600"
+                      : req.color === "emerald" ? "bg-emerald-100 text-emerald-600"
+                      : req.color === "rose" ? "bg-rose-100 text-rose-600"
+                      : "bg-purple-100 text-purple-600"
+                    }`}>
+                      <IconComponent className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className={`font-bold font-display text-sm md:text-base transition-colors ${isChecked ? "text-slate-900" : "text-slate-800"}`}>
+                        {req.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                        {req.desc_text}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
@@ -243,12 +361,13 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 space-y-3">
+              <form onSubmit={handleLiveQuerySubmit} className="flex-1 space-y-3">
                 <input
                   type="text"
                   placeholder="Your Name"
                   value={queryName}
                   onChange={e => setQueryName(e.target.value)}
+                  required
                   className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
                 <input
@@ -256,17 +375,17 @@ export default function EPassportPage({ onBack }: { onBack: () => void }) {
                   placeholder="Phone Number"
                   value={queryPhone}
                   onChange={e => setQueryPhone(e.target.value)}
+                  required
                   className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:border-rose-500"
                 />
-                <a
-                  href={getEPassportQueryWhatsapp()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors no-underline cursor-pointer"
+                <button
+                  type="submit"
+                  disabled={queryStatus === "submitting"}
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 text-white font-bold text-xs uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-green-600 transition-colors cursor-pointer border-0"
                 >
-                  WhatsApp Us
-                </a>
-              </div>
+                  {queryStatus === "submitting" ? "Sending..." : "WhatsApp Us"}
+                </button>
+              </form>
             </div>
           </div>
 

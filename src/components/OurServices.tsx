@@ -80,6 +80,12 @@ export default function OurServices({
                     {card.description}
                   </p>
                 </div>
+                {(isEpassport || isVisa) && (
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-800 group-hover:text-rose-600 transition-colors">
+                    <span>Apply Now</span>
+                    <span className="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+                  </div>
+                )}
               </div>
             );
           })}

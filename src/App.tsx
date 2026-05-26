@@ -7,13 +7,16 @@ import HappyClientsHub from "./components/HappyClientsHub";
 import ServicesHub from "./components/ServicesHub";
 import EPassportPage from "./components/EPassportPage";
 import VisaApplicationPage from "./components/VisaApplicationPage";
-import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle } from "lucide-react";
+import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building2, MessageCircle, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import AdminPanel from "./components/AdminPanel";
 import { supabase } from "./lib/supabase";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services">("Spinning");
-  const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa" | "admin">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa" | "admin">(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("admin") === "true" ? "admin" : "home";
+  });
   const [showConsultForm, setShowConsultForm] = useState(false);
   const [consultName, setConsultName] = useState("");
   const [consultDetail, setConsultDetail] = useState("");
@@ -21,19 +24,41 @@ export default function App() {
   const [notification, setNotification] = useState<string | null>(null);
   const [footerCompanyName, setFooterCompanyName] = useState("AL NAZIM TRAVELS CONSULTANCY");
   const [footerCopyright, setFooterCopyright] = useState("Copyright © 2026 Al Nazim Travels. Designed to exceed expectations.");
+  const [socialFacebook, setSocialFacebook] = useState("https://facebook.com");
+  const [socialTwitter, setSocialTwitter] = useState("https://x.com");
+  const [socialInstagram, setSocialInstagram] = useState("https://instagram.com");
+  const [socialLinkedin, setSocialLinkedin] = useState("https://linkedin.com");
+  const [socialYoutube, setSocialYoutube] = useState("https://youtube.com");
 
   useEffect(() => {
     const fetchFooter = async () => {
-      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["footer_company_name", "footer_copyright"]);
+      const { data } = await supabase.from("site_settings").select("key,value").in("key", [
+        "footer_company_name",
+        "footer_copyright",
+        "social_facebook",
+        "social_twitter",
+        "social_instagram",
+        "social_linkedin",
+        "social_youtube"
+      ]);
       if (data) {
         data.forEach((row: any) => {
           if (row.key === "footer_company_name") setFooterCompanyName(row.value);
           if (row.key === "footer_copyright") setFooterCopyright(row.value);
+          if (row.key === "social_facebook") setSocialFacebook(row.value);
+          if (row.key === "social_twitter") setSocialTwitter(row.value);
+          if (row.key === "social_instagram") setSocialInstagram(row.value);
+          if (row.key === "social_linkedin") setSocialLinkedin(row.value);
+          if (row.key === "social_youtube") setSocialYoutube(row.value);
         });
       }
     };
     fetchFooter();
   }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [currentPage]);
 
   const hubSectionRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +115,28 @@ export default function App() {
     }, 3000);
   };
 
+  const handleSubpageNavigation = (section?: string) => {
+    setCurrentPage("home");
+    if (section) {
+      setTimeout(() => {
+        if (section === "service" || section === "Services") {
+          scrollToHub("Services");
+        } else {
+          const idMap: Record<string, string> = {
+            home: "homepage",
+            why: "why-choose-us",
+            contact: "contact"
+          };
+          const elementId = idMap[section] || section;
+          const el = document.getElementById(elementId);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      }, 150);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-rose-200 selection:text-slate-900">
 
@@ -118,9 +165,9 @@ export default function App() {
       {currentPage === "admin" ? (
         <AdminPanel onBack={() => setCurrentPage("home")} />
       ) : currentPage === "epassport" ? (
-        <EPassportPage onBack={() => setCurrentPage("home")} />
+        <EPassportPage onBack={handleSubpageNavigation} />
       ) : currentPage === "visa" ? (
-        <VisaApplicationPage onBack={() => setCurrentPage("home")} />
+        <VisaApplicationPage onBack={handleSubpageNavigation} />
       ) : (
         <>
           {/* SECTION 1: SAUDI INVESTMENT PRIMARY LANDING PAGE AND INTEGRATED HOOK */}
@@ -219,26 +266,112 @@ export default function App() {
           </SaudiInvestmentLanding>
 
           {/* SECTION 3: FOOTER SECTION (Refined under Vibrant Palette) */}
-          <footer id="contact" className="bg-slate-950 text-slate-400 py-12 px-4 md:px-12 border-t border-white/5 text-xs text-center space-y-4">
-            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-2">
-                <div className="border border-rose-500/20 bg-rose-500/10 rounded-lg p-1.5 flex items-center justify-center">
-                  <Building2 className="h-4 w-4 text-rose-400" />
+          <footer id="contact" className="bg-slate-950 text-slate-400 py-12 px-6 md:px-16 border-t border-white/5 relative overflow-hidden">
+            {/* Subtle premium background glow */}
+            <div className="absolute top-0 left-1/3 w-72 h-72 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-1/3 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+              
+              {/* Left Column: Premium Logo & Company Name */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="border-2 border-rose-500/20 bg-rose-500/10 rounded-xl p-2 flex items-center justify-center shadow-lg shadow-rose-500/5">
+                  <Building2 className="h-4.5 w-4.5 text-rose-400" />
                 </div>
-                <span className="font-display font-black text-xs tracking-wider text-white">
-                  {footerCompanyName}
-                </span>
+                <div className="flex flex-col text-left">
+                  <span className="font-display font-black text-xs tracking-wider text-white uppercase">
+                    {footerCompanyName}
+                  </span>
+                  <span className="text-[8px] text-orange-400/80 font-mono font-bold tracking-widest uppercase mt-0.5">
+                    JEDDAH · SAUDI ARABIA
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-6 font-mono font-bold text-[10px]">
-                <a href="#homepage" className="hover:text-white transition-colors">TOP</a>
-                <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
-                <a href="#category-hub" className="hover:text-rose-400 transition-colors font-semibold text-rose-400">ACTIVE HUB</a>
+              
+              {/* Center Column: Beautifully Organized Social Hub */}
+              <div className="flex flex-col items-center justify-center gap-2">
+                {(socialFacebook || socialTwitter || socialInstagram || socialLinkedin || socialYoutube) && (
+                  <>
+                    <div className="text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase mb-1">
+                      Follow Us
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {socialFacebook && (
+                        <a
+                          href={socialFacebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
+                          title="Facebook"
+                        >
+                          <Facebook className="h-4 w-4" />
+                        </a>
+                      )}
+                      {socialTwitter && (
+                        <a
+                          href={socialTwitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
+                          title="Twitter / X"
+                        >
+                          <Twitter className="h-4 w-4" />
+                        </a>
+                      )}
+                      {socialInstagram && (
+                        <a
+                          href={socialInstagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
+                          title="Instagram"
+                        >
+                          <Instagram className="h-4 w-4" />
+                        </a>
+                      )}
+                      {socialLinkedin && (
+                        <a
+                          href={socialLinkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
+                          title="LinkedIn"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                      )}
+                      {socialYoutube && (
+                        <a
+                          href={socialYoutube}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
+                          title="YouTube"
+                        >
+                          <Youtube className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-              <div>
-                <p className="text-[10px] tracking-tight text-slate-500">
-                  {footerCopyright} <span onClick={() => setCurrentPage("admin")} className="cursor-pointer hover:text-slate-300">Admin</span>
+
+              {/* Right Column: Sleek Copyright & Secure Portal Link */}
+              <div className="flex flex-col items-center md:items-end gap-2 flex-shrink-0 text-center md:text-right">
+                <p className="text-[10px] tracking-widest text-slate-500 font-medium">
+                  {footerCopyright}
                 </p>
+                <a
+                  href="/?admin=true"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-500 hover:text-rose-400 transition-all duration-300 text-[8px] font-mono tracking-widest uppercase bg-transparent border-0 cursor-pointer p-0 flex items-center gap-1.5 no-underline hover:underline"
+                >
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                  [ SECURE ADMIN PORTAL ]
+                </a>
               </div>
+
             </div>
           </footer>
         </>

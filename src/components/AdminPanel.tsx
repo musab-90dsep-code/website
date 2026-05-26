@@ -1066,6 +1066,13 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
               </div>
             </SectionCard>
 
+            <SectionCard title="Social Media Links">
+              <div className="space-y-5">
+                <p className="text-xs text-slate-500">সোশ্যাল মিডিয়া পেজ বা প্রোফাইলের লিঙ্কগুলো এখান থেকে সেট করুন। কোনো লিঙ্ক খালি রাখলে সেটি ওয়েবসাইটে হাইড থাকবে।</p>
+                {["social_facebook", "social_twitter", "social_instagram", "social_linkedin", "social_youtube"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
+              </div>
+            </SectionCard>
+
             <SectionCard title="E-Passport Page - Live Query Desk">
               <div className="space-y-5">
                 {["passport_contact_title", "passport_contact_subtitle", "passport_contact_phone", "passport_contact_email", "passport_contact_address", "passport_whatsapp"].map(k => <SettingField key={k} settingKey={k} onSave={saveSetting} />)}
