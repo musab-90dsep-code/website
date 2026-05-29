@@ -11,6 +11,34 @@ import { Compass, RotateCw, Music, Users, Sparkles, Send, CheckCircle2, Building
 import AdminPanel from "./components/AdminPanel";
 import { supabase } from "./lib/supabase";
 
+const formatSocialLink = (platform: "facebook" | "twitter" | "instagram" | "linkedin" | "youtube", value: string) => {
+  if (!value) return "";
+  const cleaned = value.trim();
+  if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
+    return cleaned;
+  }
+  const domains: Record<string, string> = {
+    facebook: "facebook.com",
+    twitter: "twitter.com",
+    instagram: "instagram.com",
+    linkedin: "linkedin.com",
+    youtube: "youtube.com"
+  };
+  const platformDomain = domains[platform];
+  if (cleaned.toLowerCase().includes(platformDomain) || (platform === "twitter" && cleaned.toLowerCase().includes("x.com"))) {
+    return `https://${cleaned}`;
+  }
+  const baseUrls: Record<string, string> = {
+    facebook: "https://facebook.com/",
+    twitter: "https://x.com/",
+    instagram: "https://instagram.com/",
+    linkedin: "https://linkedin.com/in/",
+    youtube: "https://youtube.com/"
+  };
+  const handle = cleaned.startsWith("@") ? cleaned.slice(1) : cleaned;
+  return `${baseUrls[platform]}${handle}`;
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<"Spinning" | "Concert" | "Happy clients" | "Services">("Spinning");
   const [currentPage, setCurrentPage] = useState<"home" | "epassport" | "visa" | "admin">(() => {
@@ -298,7 +326,7 @@ export default function App() {
                     <div className="flex items-center gap-3">
                       {socialFacebook && (
                         <a
-                          href={socialFacebook}
+                          href={formatSocialLink("facebook", socialFacebook)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
@@ -309,7 +337,7 @@ export default function App() {
                       )}
                       {socialTwitter && (
                         <a
-                          href={socialTwitter}
+                          href={formatSocialLink("twitter", socialTwitter)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
@@ -320,7 +348,7 @@ export default function App() {
                       )}
                       {socialInstagram && (
                         <a
-                          href={socialInstagram}
+                          href={formatSocialLink("instagram", socialInstagram)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
@@ -331,7 +359,7 @@ export default function App() {
                       )}
                       {socialLinkedin && (
                         <a
-                          href={socialLinkedin}
+                          href={formatSocialLink("linkedin", socialLinkedin)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
@@ -342,7 +370,7 @@ export default function App() {
                       )}
                       {socialYoutube && (
                         <a
-                          href={socialYoutube}
+                          href={formatSocialLink("youtube", socialYoutube)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-9 h-9 rounded-full bg-slate-900/60 border border-white/5 hover:border-rose-500/40 hover:bg-rose-500/10 flex items-center justify-center text-slate-400 hover:text-rose-400 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(244,63,94,0.15)] shadow-sm"
