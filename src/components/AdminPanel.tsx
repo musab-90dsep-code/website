@@ -5,6 +5,7 @@ import {
   MessageSquare, Layers, Star, Image, FileText, Phone,
   Info, RefreshCw, CheckCircle2, XCircle, Edit2, X, Plane
 } from "lucide-react";
+import ImageCropperModal from "./ImageCropperModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Lead = { id: string; name: string; requirement: string; status: string; created_at: string };
@@ -81,6 +82,12 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const [heroPreviewMode, setHeroPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [passportPreviewMode, setPassportPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [visaPreviewMode, setVisaPreviewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Image Cropping States
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<"review_new" | "review_edit" | "hero" | "logo" | "passport" | "visa" | null>(null);
+  const [cropFileName, setCropFileName] = useState<string>("");
+  const [cropDefaultAspect, setCropDefaultAspect] = useState<number>(1);
 
   const showToast = (message: string, type: "success" | "error" = "success") => setToast({ message, type });
 
@@ -293,9 +300,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     showToast("Saved successfully!");
   };
 
-  const handleReviewPhotoUpload = async (e: ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleReviewPhotoUpload = async (file: File, isEdit: boolean) => {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -317,9 +322,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageUpload = async (file: File) => {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -358,9 +361,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleLogoUpload = async (file: File) => {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -399,9 +400,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const handlePassportCoverUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePassportCoverUpload = async (file: File) => {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -440,9 +439,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const handleVisaCoverUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleVisaCoverUpload = async (file: File) => {
     setIsUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -478,6 +475,53 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
       showToast(err.message || "Delete failed", "error");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleFileInputTrigger = (e: ChangeEvent<HTMLInputElement>, target: "review_new" | "review_edit" | "hero" | "logo" | "passport" | "visa") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    e.target.value = "";
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result as string);
+      setCropTarget(target);
+      setCropFileName(file.name);
+      
+      if (target === "review_new" || target === "review_edit") {
+        setCropDefaultAspect(1);
+      } else if (target === "hero") {
+        setCropDefaultAspect(16 / 9);
+      } else if (target === "logo") {
+        setCropDefaultAspect(1.5);
+      } else if (target === "passport" || target === "visa") {
+        setCropDefaultAspect(16 / 9);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    const target = cropTarget;
+    setCropImageSrc(null);
+    setCropTarget(null);
+    
+    if (!target) return;
+    
+    if (target === "review_new") {
+      await handleReviewPhotoUpload(croppedFile, false);
+    } else if (target === "review_edit") {
+      await handleReviewPhotoUpload(croppedFile, true);
+    } else if (target === "hero") {
+      await handleImageUpload(croppedFile);
+    } else if (target === "logo") {
+      await handleLogoUpload(croppedFile);
+    } else if (target === "passport") {
+      await handlePassportCoverUpload(croppedFile);
+    } else if (target === "visa") {
+      await handleVisaCoverUpload(croppedFile);
     }
   };
 
@@ -744,7 +788,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                       <label className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
                         <Upload className="w-3 h-3" />
                         {isUploading ? "Uploading..." : "Upload Photo"}
-                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleReviewPhotoUpload(e, false)} className="hidden" />
+                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleFileInputTrigger(e, "review_new")} className="hidden" />
                       </label>
                       <span className="text-[10px] text-slate-400">or</span>
                       <input type="text" value={newReview.avatar_image_url} onChange={e => setNewReview(p => ({ ...p, avatar_image_url: e.target.value }))} className="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-rose-500" placeholder="Paste image link here..." />
@@ -804,7 +848,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                       <label className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
                         <Upload className="w-3 h-3" />
                         {isUploading ? "Uploading..." : "Upload Photo"}
-                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleReviewPhotoUpload(e, true)} className="hidden" />
+                        <input type="file" accept="image/*" disabled={isUploading} onChange={e => handleFileInputTrigger(e, "review_edit")} className="hidden" />
                       </label>
                       <span className="text-[10px] text-slate-400">or</span>
                       <input type="text" value={editingReview.avatar_image_url || ""} onChange={e => setEditingReview(p => p ? { ...p, avatar_image_url: e.target.value } : null)} className="flex-1 text-xs border border-rose-300 rounded-lg px-3 py-1.5 focus:outline-none" placeholder="Paste image link here..." />
@@ -1156,7 +1200,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new hero image"}</p>
                   <p className="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP supported</p>
                 </div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileInputTrigger(e, "hero")} disabled={isUploading} />
               </label>
 
               <button
@@ -1199,7 +1243,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new logo image"}</p>
                   <p className="text-[10px] text-slate-400 mt-1">PNG, JPG, SVG, WEBP supported (transparent background is best)</p>
                 </div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isUploading} />
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileInputTrigger(e, "logo")} disabled={isUploading} />
               </label>
 
               {settings.brand_logo_image_url && (
@@ -1276,7 +1320,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new cover image"}</p>
                   <p className="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP supported</p>
                 </div>
-                <input type="file" accept="image/*" className="hidden" onChange={handlePassportCoverUpload} disabled={isUploading} />
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileInputTrigger(e, "passport")} disabled={isUploading} />
               </label>
 
               {settings.passport_cover_image_url && (
@@ -1353,7 +1397,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <p className="text-sm font-bold text-slate-700">{isUploading ? "Working..." : "Click to upload new cover image"}</p>
                   <p className="text-[10px] text-slate-400 mt-1">JPG, PNG, WEBP supported</p>
                 </div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleVisaCoverUpload} disabled={isUploading} />
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileInputTrigger(e, "visa")} disabled={isUploading} />
               </label>
 
               {settings.visa_cover_image_url && (
@@ -1373,6 +1417,19 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {cropImageSrc && (
+        <ImageCropperModal
+          imageSrc={cropImageSrc}
+          fileName={cropFileName}
+          defaultAspect={cropDefaultAspect}
+          onCrop={handleCropComplete}
+          onClose={() => {
+            setCropImageSrc(null);
+            setCropTarget(null);
+          }}
+        />
+      )}
     </div>
   );
 }
