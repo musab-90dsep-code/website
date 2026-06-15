@@ -211,23 +211,23 @@ export default function SaudiInvestmentLanding({
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen">
 
       {/* ── NAVBAR ───────────────────────────────────────────────────────── */}
-      <nav id="top-navigation" className={`h-[68px] px-4 md:px-12 flex items-center justify-between fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? "bg-slate-900/95 backdrop-blur-lg border-b border-white/10 shadow-lg" : "bg-transparent border-b border-white/5"}`}>
+      <nav id="top-navigation" className="h-[68px] px-4 md:px-12 flex items-center justify-between sticky top-0 w-full z-40 bg-white border-b border-slate-200/80 shadow-md">
         <div className="flex items-center gap-3">
           {s("brand_logo_image_url") ? (
-            <img src={s("brand_logo_image_url")} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-lg border border-white/10" />
+            <img src={s("brand_logo_image_url")} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-md border border-slate-200" />
           ) : (
             <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">
               {s("brand_logo_text") || "A"}
             </div>
           )}
           <div className="flex flex-col leading-none">
-            <span className="font-display font-black text-sm tracking-tight text-white">{s("brand_name")}</span>
-            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{s("brand_sub")}</span>
+            <span className="font-display font-black text-sm tracking-tight text-slate-900">{s("brand_name")}</span>
+            <span className="text-[9px] text-orange-600 font-mono font-bold tracking-wider uppercase">{s("brand_sub")}</span>
           </div>
         </div>
-        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+        <div className="hidden md:flex items-center bg-slate-100 border border-slate-200/60 rounded-full px-2.5 py-1.5 gap-1 shadow-inner">
           {[{ label: "Home", href: "#homepage" }, { label: "Service", href: "#service" }, { label: "Why Us", href: "#why-choose-us" }, { label: "Contact", href: "#contact" }].map(link => (
-            <a key={link.href} href={link.href} className="px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 no-underline visited:text-white/90">
+            <a key={link.href} href={link.href} className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 transition-all duration-200 no-underline visited:text-slate-700">
               {link.label}
             </a>
           ))}
@@ -239,74 +239,69 @@ export default function SaudiInvestmentLanding({
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-<section id="homepage" className="relative min-h-[600px] text-white py-20 px-4 md:px-12 flex flex-col justify-center overflow-hidden bg-slate-900">
-  <div className="absolute inset-0 z-0">
-    <img
-      src={dataLoaded ? s("hero_image_url") : undefined}
-      alt="Hero"
-      className={`w-full h-full object-cover object-center transition-opacity duration-700 ${dataLoaded ? "opacity-100" : "opacity-0"}`}
-    />
-    <div className="absolute inset-x-0 top-0 h-[180px] bg-gradient-to-b from-slate-950/80 via-slate-950/30 to-transparent" />
-    <div className="absolute inset-x-0 bottom-0 h-[350px] bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-  </div>
+      <section id="homepage" className="relative w-full aspect-[9/16] md:aspect-[16/9] text-white py-20 px-4 md:px-12 flex flex-col justify-center overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={dataLoaded ? s("hero_image_url") : undefined}
+            alt="Hero"
+            className={`w-full h-full object-cover object-top transition-opacity duration-700 ${dataLoaded ? "opacity-100" : "opacity-0"}`}
+          />
+          <div className="absolute inset-x-0 top-0 h-[180px] bg-gradient-to-b from-slate-950/80 via-slate-950/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-[350px] bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+        </div>
 
-  {/* Decorative bars */}
-  <div className="absolute left-6 md:left-20 bottom-10 hidden lg:block w-72 h-44 z-10 pointer-events-none">
-    <div className="relative w-full h-full flex items-end gap-3">
-      <div className="w-8 bg-gradient-to-t from-rose-600 to-rose-400 rounded h-[110px] shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse" />
-      <div className="w-8 bg-gradient-to-t from-orange-600 to-orange-400 rounded h-[140px] shadow-[0_0_20px_rgba(249,115,22,0.4)]" />
-      <div className="w-8 bg-gradient-to-t from-teal-600 to-teal-400 rounded h-[90px] shadow-[0_0_10px_rgba(20,184,166,0.4)]" />
-      <div className="w-8 bg-gradient-to-t from-indigo-700 to-indigo-500 rounded h-[130px]" />
-    </div>
-  </div>
+        {/* Decorative bars */}
+        <div className="absolute left-6 md:left-20 bottom-10 hidden lg:block w-72 h-44 z-10 pointer-events-none">
+          <div className="relative w-full h-full flex items-end gap-3">
+            <div className="w-8 bg-gradient-to-t from-rose-600 to-rose-400 rounded h-[110px] shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse" />
+            <div className="w-8 bg-gradient-to-t from-orange-600 to-orange-400 rounded h-[140px] shadow-[0_0_20px_rgba(249,115,22,0.4)]" />
+            <div className="w-8 bg-gradient-to-t from-teal-600 to-teal-400 rounded h-[90px] shadow-[0_0_10px_rgba(20,184,166,0.4)]" />
+            <div className="w-8 bg-gradient-to-t from-indigo-700 to-indigo-500 rounded h-[130px]" />
+          </div>
+        </div>
 
-  <div className="max-w-4xl mx-auto text-center relative z-20 space-y-6 md:space-y-8">
-    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/40 border border-white/20 text-orange-400 font-mono font-bold text-[10px] md:text-xs uppercase tracking-widest mx-auto shadow-md backdrop-blur-md">
-      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-      {s("hero_badge_text")}
-    </div>
-    
-    <h1 className="text-4xl md:text-7xl font-black text-white text-center tracking-tighter font-display uppercase drop-shadow-xl">
-  {/* Line 1 - হাইট কমিয়ে ০.৮em করা হয়েছে এবং relative পজিশন দেওয়া হয়েছে */}
-  <span className="flex items-center justify-center overflow-hidden h-[0.8em] relative mx-auto"> 
-    {/* -translate-y-[0.05em] দিয়ে টেক্সটকে নিখুঁতভাবে বক্সের মাঝখানে ব্যালেন্স করা হয়েছে */}
-    <span className="block animate-title-scroll -translate-y-[0.05em]">
-      {s("hero_title_line1")}
-    </span>
-  </span>
+        <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto text-center relative z-20 space-y-6 md:space-y-8 xl:space-y-12">
+          <h1 className="text-4xl md:text-7xl xl:text-8xl 2xl:text-9xl font-black text-white text-center tracking-tighter font-display uppercase drop-shadow-xl">
+            {/* Line 1 - হাইট কমিয়ে ০.৮em করা হয়েছে এবং relative পজিশন দেওয়া হয়েছে */}
+            <span className="flex items-center justify-center overflow-hidden h-[0.8em] relative mx-auto">
+              {/* -translate-y-[0.05em] দিয়ে টেক্সটকে নিখুঁতভাবে বক্সের মাঝখানে ব্যালেন্স করা হয়েছে */}
+              <span className="block animate-title-scroll -translate-y-[0.05em]">
+                {s("hero_title_line1")}
+              </span>
+            </span>
 
-  {/* Line 2 - এখানেও সেম ট্রিক, সাথে mt-4 বা আপনার সুবিধা মতো মার্জিন টপ */}
-  <span className="flex items-center justify-center overflow-hidden h-[0.8em] relative mx-auto mt-4"> 
-    <span 
-      className="block animate-title-scroll -translate-y-[0.05em] text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300"
-    >
-      {s("hero_title_line2")}
-    </span>
-  </span>
-  
-  {s("hero_title_line3") && (
-    <span className="block text-xl md:text-3xl font-extrabold text-orange-400 tracking-wider mt-6">
-      {s("hero_title_line3")}
-    </span>
-  )}
-</h1>
-    
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-md">
-        {s("hero_location")}
-      </span>
-      <p className="text-white/95 text-sm md:text-xl text-center max-w-2xl mx-auto leading-relaxed drop-shadow font-medium mt-2">
-        {s("hero_tagline")}
-      </p>
-    </div>
-    <div className="pt-4 flex justify-center">
-      <a href="#contact" className="bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-display text-xs font-bold py-3.5 px-8 rounded-full shadow-lg shadow-rose-500/30 transition-all hover:scale-105 inline-flex items-center gap-2 no-underline cursor-pointer">
-        <PhoneCall className="h-4 w-4" />
-        {s("hero_cta_button")}
-      </a>
-    </div>
-  </div>
-</section>
+            {/* Line 2 - এখানেও সেম ট্রিক, সাথে mt-4 বা আপনার সুবিধা মতো মার্জিন টপ */}
+            <span className="flex items-center justify-center overflow-hidden h-[0.8em] relative mx-auto mt-4">
+              <span
+                className="block animate-title-scroll -translate-y-[0.05em] text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300"
+              >
+                {s("hero_title_line2")}
+              </span>
+            </span>
+
+            {s("hero_title_line3") && (
+              <span className="block text-xl md:text-3xl xl:text-4xl 2xl:text-5xl font-extrabold text-orange-400 tracking-wider mt-6">
+                {s("hero_title_line3")}
+              </span>
+            )}
+          </h1>
+
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-xs md:text-sm xl:text-base font-mono font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-md">
+              {s("hero_location")}
+            </span>
+            <p className="text-white/95 text-sm md:text-xl xl:text-2xl 2xl:text-3xl text-center max-w-2xl xl:max-w-4xl mx-auto leading-relaxed drop-shadow font-medium mt-2">
+              {s("hero_tagline")}
+            </p>
+          </div>
+          <div className="pt-4 flex justify-center">
+            <a href="#contact" className="bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-display text-xs xl:text-sm font-bold py-3.5 px-8 xl:py-4.5 xl:px-10 rounded-full shadow-lg shadow-rose-500/30 transition-all hover:scale-105 inline-flex items-center gap-2 no-underline cursor-pointer">
+              <PhoneCall className="h-4 w-4 xl:h-5 xl:w-5" />
+              {s("hero_cta_button")}
+            </a>
+          </div>
+        </div>
+      </section>
       {children}
 
       {/* ── OUR SERVICES ─────────────────────────────────────────────────── */}
@@ -318,30 +313,30 @@ export default function SaudiInvestmentLanding({
         onNavigateToVisa={onNavigateToVisa}
       />
 
-        {/* ── WHY CHOOSE US ────────────────────────────────────────────────── */}
-      <section id="why-choose-us" className="py-20 bg-white px-4 md:px-12">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 font-display leading-tight uppercase tracking-tight">
+      {/* ── WHY CHOOSE US ────────────────────────────────────────────────── */}
+      <section id="why-choose-us" className="py-20 xl:py-28 bg-white px-4 md:px-12">
+        <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto text-center space-y-8 xl:space-y-12">
+          <h2 className="text-3xl md:text-5xl xl:text-6xl 2xl:text-7xl font-black text-slate-900 font-display leading-tight uppercase tracking-tight">
             {s("why_choose_title")}
           </h2>
-          <div className="space-y-6 text-slate-600 text-base md:text-lg leading-relaxed font-medium">
+          <div className="space-y-6 text-slate-600 text-base md:text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-medium">
             <p>{s("why_choose_para1")}</p>
             <p>{s("why_choose_para2")}</p>
           </div>
         </div>
       </section>
       {/* ── HAPPY CLIENTS ────────────────────────────────────────────────── */}
-      <section className="py-20 bg-white px-4 md:px-12 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 xl:py-28 bg-white px-4 md:px-12 relative overflow-hidden">
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[85vw] mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-[10px] uppercase tracking-widest mx-auto">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-[10px] xl:text-xs uppercase tracking-widest mx-auto">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Testimonials</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900 font-display tracking-tight uppercase">
+            <h2 className="text-3xl md:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 font-display tracking-tight uppercase">
               {s("testimonials_section_title")}
             </h2>
-            <p className="text-sm text-slate-500 font-medium max-w-2xl mx-auto">
+            <p className="text-sm xl:text-base 2xl:text-lg text-slate-500 font-medium max-w-2xl xl:max-w-4xl mx-auto">
               {s("testimonials_section_subtitle")}
             </p>
           </div>
@@ -350,20 +345,20 @@ export default function SaudiInvestmentLanding({
       </section>
 
       {/* ── CONTACT SECTION ──────────────────────────────────────────────── */}
-      <section id="contact" className="py-20 bg-slate-50 px-4 md:px-12 relative overflow-hidden">
+      <section id="contact" className="py-20 xl:py-28 bg-slate-50 px-4 md:px-12 relative overflow-hidden">
         {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-5xl mx-auto bg-white rounded-[32px] p-8 md:p-12 shadow-2xl border border-slate-100 relative overflow-hidden">
+        <div className="max-w-5xl xl:max-w-7xl 2xl:max-w-[80vw] mx-auto bg-white rounded-[32px] p-8 md:p-12 xl:p-16 shadow-2xl border border-slate-100 relative overflow-hidden">
           {/* Ambient lighting inside card */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900 font-display tracking-tight uppercase">
+            <h2 className="text-3xl md:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 font-display tracking-tight uppercase">
               Live Query Desk
             </h2>
-            <p className="text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
+            <p className="text-sm xl:text-base 2xl:text-lg text-slate-500 max-w-lg xl:max-w-2xl mx-auto leading-relaxed">
               Get in touch with our experts. We're ready to answer your questions and provide personalized consultation.
             </p>
           </div>

@@ -147,7 +147,7 @@ export default function App() {
     setCurrentPage("home");
     if (section) {
       setTimeout(() => {
-        if (section === "service" || section === "Services") {
+        if (section === "Services") {
           scrollToHub("Services");
         } else {
           const idMap: Record<string, string> = {

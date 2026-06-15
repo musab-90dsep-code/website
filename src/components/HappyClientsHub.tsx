@@ -144,7 +144,7 @@ export default function HappyClientsHub() {
   const extendedReviews = [...reviews, ...reviews];
 
   return (
-    <div className="max-w-6xl mx-auto w-full flex flex-col items-center relative">
+    <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[85vw] mx-auto w-full flex flex-col items-center relative">
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
@@ -159,7 +159,7 @@ export default function HappyClientsHub() {
             <div
               // id এর সাথে index যুক্ত করে ইউনিক কি (key) দেওয়া হয়েছে যেন রিঅ্যাক্ট ওয়ার্নিং না দেয়
               key={`${review.id}-${index}`}
-              className="snap-start shrink-0 w-full md:w-[calc(33.333%-22px)] relative bg-slate-50 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col items-center mt-6 group hover:shadow-md transition-shadow"
+              className="snap-start shrink-0 w-full md:w-[calc(33.333%-22px)] relative bg-slate-50 shadow-sm rounded-3xl p-6 md:p-8 xl:p-10 flex flex-col items-center mt-6 group hover:shadow-md transition-shadow"
             >
               {/* Quote Background */}
               <div className="absolute right-6 top-6 text-slate-200 pointer-events-none">
@@ -168,7 +168,7 @@ export default function HappyClientsHub() {
 
               {/* Avatar Overlap */}
               {review.avatar_image_url || (review.avatar_letter && (review.avatar_letter.startsWith("http") || review.avatar_letter.startsWith("/"))) ? (
-                <div className="absolute -top-10 h-20 w-20 rounded-full overflow-hidden ring-[6px] ring-white bg-slate-100 flex items-center justify-center shadow-md">
+                <div className="absolute -top-10 h-20 w-20 xl:h-24 xl:w-24 rounded-full overflow-hidden ring-[6px] ring-white bg-slate-100 flex items-center justify-center shadow-md">
                   <img 
                     src={review.avatar_image_url || review.avatar_letter} 
                     alt={review.name} 
@@ -176,8 +176,8 @@ export default function HappyClientsHub() {
                   />
                 </div>
               ) : (
-                <div className={`absolute -top-10 h-20 w-20 rounded-full ${review.color_class || 'bg-indigo-100'} ring-[6px] ring-white flex items-center justify-center shadow-md`}>
-                  <span className="text-xl font-bold font-display uppercase tracking-wider text-white">
+                <div className={`absolute -top-10 h-20 w-20 xl:h-24 xl:w-24 rounded-full ${review.color_class || 'bg-indigo-100'} ring-[6px] ring-white flex items-center justify-center shadow-md`}>
+                  <span className="text-xl xl:text-2xl font-bold font-display uppercase tracking-wider text-white">
                     {review.avatar_letter}
                   </span>
                 </div>
@@ -185,8 +185,8 @@ export default function HappyClientsHub() {
 
               {/* Card Content */}
               <div className="mt-10 flex flex-col items-center text-center w-full">
-                <h4 className="font-bold text-slate-900 font-display text-lg tracking-wide">{review.name}</h4>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mb-4">
+                <h4 className="font-bold text-slate-900 font-display text-lg xl:text-xl 2xl:text-2xl tracking-wide">{review.name}</h4>
+                <p className="text-[10px] xl:text-xs 2xl:text-sm font-bold text-slate-400 uppercase tracking-widest mt-1 mb-4">
                   {review.location}
                 </p>
 
@@ -198,7 +198,7 @@ export default function HappyClientsHub() {
                 </div>
 
                 {/* Review Text */}
-                <blockquote className="text-sm text-slate-600 italic leading-relaxed">
+                <blockquote className="text-sm xl:text-base 2xl:text-lg text-slate-600 italic leading-relaxed">
                   "{review.review_text}"
                 </blockquote>
               </div>

@@ -38,15 +38,15 @@ export default function OurServices({
   onNavigateToVisa,
 }: OurServicesProps) {
   return (
-    <section id="service" className="py-16 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-slate-900 font-display tracking-tight uppercase">
+    <section id="service" className="py-16 xl:py-24 bg-slate-50 border-t border-b border-slate-200 px-4 md:px-12">
+      <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[85vw] mx-auto">
+        <div className="text-center mb-12 xl:mb-16">
+          <h2 className="text-3xl md:text-4xl xl:text-5xl 2xl:text-6xl font-black text-slate-900 font-display tracking-tight uppercase">
             {title}
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-1">{subtitle}</p>
+          <p className="text-xs xl:text-sm 2xl:text-base text-slate-500 font-mono mt-1">{subtitle}</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8 2xl:gap-10">
           {featureCards.map((card, idx) => {
             const Icon = getIcon(card.icon_name);
             const isEpassport = idx === 0;
@@ -67,21 +67,21 @@ export default function OurServices({
               >
                 <div className="space-y-4">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    className={`w-10 h-10 xl:w-12 xl:h-12 rounded-xl flex items-center justify-center ${
                       ICON_COLOR[card.color] || ICON_COLOR.rose
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5 xl:h-6 xl:w-6" />
                   </div>
-                  <h3 className="font-bold font-display text-base text-slate-950 leading-snug">
+                  <h3 className="font-bold font-display text-base xl:text-lg 2xl:text-xl text-slate-950 leading-snug">
                     {card.title}
                   </h3>
-                  <p className="text-xs leading-relaxed text-slate-500">
+                  <p className="text-xs xl:text-sm 2xl:text-base leading-relaxed text-slate-500">
                     {card.description}
                   </p>
                 </div>
                 {(isEpassport || isVisa) && (
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-800 group-hover:text-rose-600 transition-colors">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs xl:text-sm font-bold text-slate-800 group-hover:text-rose-600 transition-colors">
                     <span>Apply Now</span>
                     <span className="transform group-hover:translate-x-1 transition-transform duration-200">→</span>
                   </div>

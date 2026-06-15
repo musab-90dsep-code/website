@@ -161,7 +161,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: (section?: str
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
-      <nav className="h-[68px] bg-slate-900/95 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md shadow-lg">
+      <nav className="h-[68px] bg-white border-b border-slate-200/80 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 shadow-md">
         {/* Logo & Brand */}
         <div className="flex items-center gap-3">
           {settings.brand_logo_image_url ? (
@@ -172,15 +172,15 @@ export default function VisaApplicationPage({ onBack }: { onBack: (section?: str
             </div>
           )}
           <div className="flex flex-col leading-none">
-            <span className="font-display font-black text-sm tracking-tight text-white">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
-            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
+            <span className="font-display font-black text-sm tracking-tight text-slate-900">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
+            <span className="text-[9px] text-orange-600 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
           </div>
         </div>
-        
+
         {/* Center Links */}
-        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+        <div className="hidden md:flex items-center bg-slate-100 border border-slate-200/60 rounded-full px-2.5 py-1.5 gap-1 shadow-inner">
           {[{ label: "Home", href: "home" }, { label: "Service", href: "service" }, { label: "Why Us", href: "why" }, { label: "Contact", href: "contact" }].map(link => (
-            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 cursor-pointer">
+            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 transition-all duration-200 cursor-pointer">
               {link.label}
             </button>
           ))}
@@ -190,7 +190,7 @@ export default function VisaApplicationPage({ onBack }: { onBack: (section?: str
         <div className="flex items-center gap-3">
           <button
             onClick={() => onBack()}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all px-4 py-2 rounded-lg font-semibold text-xs border-0 cursor-pointer"
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 transition-all px-4 py-2 rounded-lg font-semibold text-xs border border-slate-200 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>হোমে ফিরে যান</span>
@@ -203,11 +203,11 @@ export default function VisaApplicationPage({ onBack }: { onBack: (section?: str
       </nav>
 
       {/* Cover Photo Section */}
-      <div className="relative w-full h-[40vh] md:h-[50vh] bg-slate-900">
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-slate-900">
         <img
           src={settings.visa_cover_image_url || "/epassport_cover.png"}
           alt="Visa Services"
-          className="w-full h-full object-cover object-center opacity-60"
+          className="w-full h-full object-cover object-top opacity-60"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
 

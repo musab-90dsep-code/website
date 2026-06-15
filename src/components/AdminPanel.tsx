@@ -161,10 +161,10 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     e.preventDefault();
     const isUrl = newReview.avatar_image_url && (newReview.avatar_image_url.startsWith("http") || newReview.avatar_image_url.startsWith("/"));
     const avatarLetter = isUrl ? newReview.avatar_image_url : (newReview.avatar_letter || newReview.name.charAt(0).toUpperCase());
-    
+
     try {
       // Try with avatar_image_url column
-      const { error } = await supabase.from("reviews").insert([{ 
+      const { error } = await supabase.from("reviews").insert([{
         name: newReview.name,
         location: newReview.location,
         rating: newReview.rating,
@@ -174,11 +174,11 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
         avatar_letter: avatarLetter,
         avatar_image_url: newReview.avatar_image_url || null
       }]);
-      
+
       if (error) {
         // Fallback: retry without avatar_image_url
         console.warn("Retrying insert without avatar_image_url column...", error);
-        const { error: retryErr } = await supabase.from("reviews").insert([{ 
+        const { error: retryErr } = await supabase.from("reviews").insert([{
           name: newReview.name,
           location: newReview.location,
           rating: newReview.rating,
@@ -202,7 +202,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     if (!editingReview) return;
     const isUrl = editingReview.avatar_image_url && (editingReview.avatar_image_url.startsWith("http") || editingReview.avatar_image_url.startsWith("/"));
     const avatarLetter = isUrl ? editingReview.avatar_image_url : (editingReview.avatar_letter || editingReview.name.charAt(0).toUpperCase());
-    
+
     try {
       // Try with avatar_image_url column
       const { error } = await supabase.from("reviews").update({
@@ -215,7 +215,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
         avatar_letter: avatarLetter,
         avatar_image_url: editingReview.avatar_image_url || null
       }).eq("id", editingReview.id);
-      
+
       if (error) {
         // Fallback: retry without avatar_image_url
         console.warn("Retrying update without avatar_image_url column...", error);
@@ -308,7 +308,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
       const { error: upErr } = await supabase.storage.from("images").upload(fileName, file, { cacheControl: "3600", upsert: false });
       if (upErr) throw upErr;
       const { data: { publicUrl } } = supabase.storage.from("images").getPublicUrl(fileName);
-      
+
       if (isEdit) {
         setEditingReview(p => p ? { ...p, avatar_image_url: publicUrl } : null);
       } else {
@@ -481,23 +481,23 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const handleFileInputTrigger = (e: ChangeEvent<HTMLInputElement>, target: "review_new" | "review_edit" | "hero" | "logo" | "passport" | "visa") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     e.target.value = "";
-    
+
     const reader = new FileReader();
     reader.onload = () => {
       setCropImageSrc(reader.result as string);
       setCropTarget(target);
       setCropFileName(file.name);
-      
+
       if (target === "review_new" || target === "review_edit") {
         setCropDefaultAspect(1);
       } else if (target === "hero") {
-        setCropDefaultAspect(16 / 9);
+        setCropDefaultAspect(3 / 2);
       } else if (target === "logo") {
         setCropDefaultAspect(1.5);
       } else if (target === "passport" || target === "visa") {
-        setCropDefaultAspect(16 / 9);
+        setCropDefaultAspect(3 / 2);
       }
     };
     reader.readAsDataURL(file);
@@ -507,9 +507,9 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
     const target = cropTarget;
     setCropImageSrc(null);
     setCropTarget(null);
-    
+
     if (!target) return;
-    
+
     if (target === "review_new") {
       await handleReviewPhotoUpload(croppedFile, false);
     } else if (target === "review_edit") {
@@ -1166,7 +1166,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
 
                   <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${heroPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
                     }`}>
-                    <img src={settings.hero_image_url} alt="Current hero" className="w-full h-full object-cover object-center opacity-70" />
+                    <img src={settings.hero_image_url} alt="Current hero" className="w-full h-full object-cover object-top opacity-70" />
 
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
@@ -1284,7 +1284,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
 
                   <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${passportPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
                     }`}>
-                    <img src={settings.passport_cover_image_url || "/epassport_cover.png"} alt="Passport cover" className="w-full h-full object-cover object-center opacity-60" />
+                    <img src={settings.passport_cover_image_url || "/epassport_cover.png"} alt="Passport cover" className="w-full h-full object-cover object-top opacity-60" />
 
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">
@@ -1361,7 +1361,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
 
                   <div className={`rounded-2xl overflow-hidden border border-slate-200 relative group bg-slate-950 shadow-inner transition-all duration-300 ${visaPreviewMode === "desktop" ? "aspect-[21/9] w-full" : "aspect-[9/16] w-[260px] mx-auto"
                     }`}>
-                    <img src={settings.visa_cover_image_url || "/epassport_cover.png"} alt="Visa cover" className="w-full h-full object-cover object-center opacity-60" />
+                    <img src={settings.visa_cover_image_url || "/epassport_cover.png"} alt="Visa cover" className="w-full h-full object-cover object-top opacity-60" />
 
                     {/* Safe zone indicator grid */}
                     <div className="absolute inset-4 border border-white/20 border-dashed rounded-xl pointer-events-none flex items-center justify-center">

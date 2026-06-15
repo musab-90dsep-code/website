@@ -162,26 +162,26 @@ export default function EPassportPage({ onBack }: { onBack: (section?: string) =
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen pb-20">
       {/* Navigation Bar */}
-      <nav className="h-[68px] bg-slate-900/95 border-b border-white/10 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md shadow-lg">
+      <nav className="h-[68px] bg-white border-b border-slate-200/80 px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 shadow-md">
         {/* Logo & Brand */}
         <div className="flex items-center gap-3">
           {settings.brand_logo_image_url ? (
-            <img src={settings.brand_logo_image_url} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-lg border border-white/10" />
+            <img src={settings.brand_logo_image_url} alt="Logo" className="w-9 h-9 object-cover rounded-xl shadow-md border border-slate-200" />
           ) : (
             <div className="w-9 h-9 bg-gradient-to-tr from-rose-500 to-orange-400 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-rose-500/40 italic text-xl">
               {settings.brand_logo_text || "A"}
             </div>
           )}
           <div className="flex flex-col leading-none">
-            <span className="font-display font-black text-sm tracking-tight text-white">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
-            <span className="text-[9px] text-orange-400 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
+            <span className="font-display font-black text-sm tracking-tight text-slate-900">{settings.brand_name || "AL NAZIM TRAVELS"}</span>
+            <span className="text-[9px] text-orange-600 font-mono font-bold tracking-wider uppercase">{settings.brand_sub || "CONSULTANCY"}</span>
           </div>
         </div>
-        
+
         {/* Center Links */}
-        <div className="hidden md:flex items-center bg-slate-950/60 backdrop-blur-md border border-white/15 rounded-full px-2.5 py-1.5 gap-1 shadow-lg">
+        <div className="hidden md:flex items-center bg-slate-100 border border-slate-200/60 rounded-full px-2.5 py-1.5 gap-1 shadow-inner">
           {[{ label: "Home", href: "home" }, { label: "Service", href: "service" }, { label: "Why Us", href: "why" }, { label: "Contact", href: "contact" }].map(link => (
-            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 cursor-pointer">
+            <button key={link.href} onClick={() => onBack(link.href)} className="bg-transparent border-0 px-4 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 transition-all duration-200 cursor-pointer">
               {link.label}
             </button>
           ))}
@@ -204,11 +204,11 @@ export default function EPassportPage({ onBack }: { onBack: (section?: string) =
       </nav>
 
       {/* Cover Photo Section */}
-      <div className="relative w-full h-[40vh] md:h-[50vh] bg-slate-900">
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-slate-900">
         <img
           src={settings.passport_cover_image_url || "/epassport_cover.png"}
           alt="E-Passport Services"
-          className="w-full h-full object-cover object-center opacity-60"
+          className="w-full h-full object-cover object-top opacity-60"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
 
@@ -247,27 +247,27 @@ export default function EPassportPage({ onBack }: { onBack: (section?: string) =
             {requirements.map((req) => {
               const IconComponent = IconMap[req.icon_name] || CheckCircle2;
               const isChecked = !!checkedReqs[req.id];
-              
+
               // Safe border/bg themes mappings
               const themeBorder = isChecked
                 ? req.color === "blue" ? "border-blue-500 shadow-blue-500/5 shadow-lg"
                   : req.color === "emerald" ? "border-emerald-500 shadow-emerald-500/5 shadow-lg"
-                  : req.color === "rose" ? "border-rose-500 shadow-rose-500/5 shadow-lg"
-                  : "border-purple-500 shadow-purple-500/5 shadow-lg"
+                    : req.color === "rose" ? "border-rose-500 shadow-rose-500/5 shadow-lg"
+                      : "border-purple-500 shadow-purple-500/5 shadow-lg"
                 : "border-slate-100 hover:border-slate-300 hover:bg-white bg-slate-50/50";
 
               const themeBg = isChecked
                 ? req.color === "blue" ? "bg-blue-50/20"
                   : req.color === "emerald" ? "bg-emerald-50/20"
-                  : req.color === "rose" ? "bg-rose-50/20"
-                  : "bg-purple-50/20"
+                    : req.color === "rose" ? "bg-rose-50/20"
+                      : "bg-purple-50/20"
                 : "bg-slate-50/50";
-              
+
               const dotTheme = isChecked
                 ? req.color === "blue" ? "bg-blue-500 border-blue-500 text-white"
                   : req.color === "emerald" ? "bg-emerald-500 border-emerald-500 text-white"
-                  : req.color === "rose" ? "bg-rose-500 border-rose-500 text-white"
-                  : "bg-purple-500 border-purple-500 text-white"
+                    : req.color === "rose" ? "bg-rose-500 border-rose-500 text-white"
+                      : "bg-purple-500 border-purple-500 text-white"
                 : "border-slate-300 bg-white text-transparent";
 
               return (
@@ -282,14 +282,12 @@ export default function EPassportPage({ onBack }: { onBack: (section?: string) =
                     </div>
                   </div>
                   <div className="flex gap-3 min-w-0">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${
-                      isChecked ? "scale-110" : ""
-                    } ${
-                      req.color === "blue" ? "bg-blue-100 text-blue-600"
-                      : req.color === "emerald" ? "bg-emerald-100 text-emerald-600"
-                      : req.color === "rose" ? "bg-rose-100 text-rose-600"
-                      : "bg-purple-100 text-purple-600"
-                    }`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 ${isChecked ? "scale-110" : ""
+                      } ${req.color === "blue" ? "bg-blue-100 text-blue-600"
+                        : req.color === "emerald" ? "bg-emerald-100 text-emerald-600"
+                          : req.color === "rose" ? "bg-rose-100 text-rose-600"
+                            : "bg-purple-100 text-purple-600"
+                      }`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
