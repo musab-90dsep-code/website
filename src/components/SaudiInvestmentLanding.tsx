@@ -239,7 +239,7 @@ export default function SaudiInvestmentLanding({
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section id="homepage" className="relative w-full aspect-[9/16] md:aspect-[16/9] text-white py-20 px-4 md:px-12 flex flex-col justify-center overflow-hidden bg-slate-900">
+      <section id="homepage" className="relative w-full min-h-[calc(100vh-68px)] text-white py-8 md:py-12 px-4 md:px-12 flex flex-col justify-center overflow-hidden bg-slate-900">
         <div className="absolute inset-0 z-0">
           <img
             src={dataLoaded ? s("hero_image_url") : undefined}
@@ -260,8 +260,8 @@ export default function SaudiInvestmentLanding({
           </div>
         </div>
 
-        <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto text-center relative z-20 space-y-6 md:space-y-8 xl:space-y-12">
-          <h1 className="text-4xl md:text-7xl xl:text-8xl 2xl:text-9xl font-black text-white text-center tracking-tighter font-display uppercase drop-shadow-xl">
+        <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto text-center relative z-20 space-y-4 md:space-y-6 xl:space-y-8">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl 2xl:text-8xl font-black text-white text-center tracking-tighter font-display uppercase drop-shadow-xl">
             {/* Line 1 - হাইট কমিয়ে ০.৮em করা হয়েছে এবং relative পজিশন দেওয়া হয়েছে */}
             <span className="flex items-center justify-center overflow-hidden h-[0.8em] relative mx-auto">
               {/* -translate-y-[0.05em] দিয়ে টেক্সটকে নিখুঁতভাবে বক্সের মাঝখানে ব্যালেন্স করা হয়েছে */}
@@ -280,7 +280,7 @@ export default function SaudiInvestmentLanding({
             </span>
 
             {s("hero_title_line3") && (
-              <span className="block text-xl md:text-3xl xl:text-4xl 2xl:text-5xl font-extrabold text-orange-400 tracking-wider mt-6">
+              <span className="block text-xl md:text-2xl lg:text-3xl font-extrabold text-orange-400 tracking-wider mt-6">
                 {s("hero_title_line3")}
               </span>
             )}
@@ -290,7 +290,7 @@ export default function SaudiInvestmentLanding({
             <span className="text-xs md:text-sm xl:text-base font-mono font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-md">
               {s("hero_location")}
             </span>
-            <p className="text-white/95 text-sm md:text-xl xl:text-2xl 2xl:text-3xl text-center max-w-2xl xl:max-w-4xl mx-auto leading-relaxed drop-shadow font-medium mt-2">
+            <p className="text-white/95 text-sm md:text-base lg:text-lg xl:text-xl text-center max-w-2xl xl:max-w-4xl mx-auto leading-relaxed drop-shadow font-medium mt-2">
               {s("hero_tagline")}
             </p>
           </div>
